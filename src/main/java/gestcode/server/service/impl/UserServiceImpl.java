@@ -55,8 +55,9 @@ public class UserServiceImpl implements UserService {
         user.setEmail(request.getEmail());
 
         user.setRole(Role.USER);
-        user.setStatus(UserStatus.PENDING_ACTIVATION);
-        user.setEnabled(false);
+        // per defecte el usuari esta actiu i habilitat
+        user.setStatus(UserStatus.ACTIVE);
+        user.setEnabled(true);
 
         User savedUser = userRepository.save(user);
         return mapToProfileResponse(savedUser);
@@ -67,6 +68,16 @@ public class UserServiceImpl implements UserService {
     public UserProfileResponseDTO getUserById(Long id) {
         verifyUserAccess(id, "Només pots veure el teu propi perfil");
         User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuari no trobat"));
+        return mapToProfileResponse(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserProfileResponseDTO getMe() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = ((CustomUserDetails) authentication.getPrincipal()).getUser().getId();
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuari no trobat"));
         return mapToProfileResponse(user);
     }
@@ -98,7 +109,6 @@ public class UserServiceImpl implements UserService {
             if (request.getEnabled() != null)
                 user.setEnabled(request.getEnabled());
         }
-
 
         User updatedUser = userRepository.save(user);
         return mapToProfileResponse(updatedUser);
@@ -158,7 +168,7 @@ public class UserServiceImpl implements UserService {
 
     private void verifyUserAccess(Long targetUserId, String errorMessage) {
         if (isCurrentUserAdmin()) {
-            return; // Admins can access anyone
+            return; // els admins poden accedir a qualsevol usuari
         }
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

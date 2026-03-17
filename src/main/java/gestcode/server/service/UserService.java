@@ -8,7 +8,12 @@ import org.springframework.data.domain.Pageable;
 
 public interface UserService {
     UserProfileResponseDTO registerUser(UserRegisterRequestDTO request);
+
     UserProfileResponseDTO getUserById(Long id);
+
     UserProfileResponseDTO updateUser(Long id, UserUpdateRequestDTO request);
+
     UserListResponseDTO listUsers(String keyword, Pageable pageable);
+
+    UserProfileResponseDTO getMe();
 }

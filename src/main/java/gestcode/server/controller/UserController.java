@@ -35,6 +35,15 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/me")
+    @Operation(summary = "Obtenir usuari actual", description = "Recupera els detalls de l'usuari autenticat")
+    @ApiResponse(responseCode = "200", description = "Usuari trobat")
+    @ApiResponse(responseCode = "404", description = "Usuari no trobat")
+    public ResponseEntity<UserProfileResponseDTO> getMe() {
+        UserProfileResponseDTO response = userService.getMe();
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Llistar usuaris", description = "Recupera una llista paginada d'usuaris, filtratge opcional per paraula clau")
@@ -42,8 +51,7 @@ public class UserController {
     public ResponseEntity<UserListResponseDTO> listUsers(
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
+            @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         UserListResponseDTO response = userService.listUsers(keyword, pageable);
         return ResponseEntity.ok(response);
@@ -55,8 +63,7 @@ public class UserController {
     @ApiResponse(responseCode = "404", description = "Usuari no trobat")
     public ResponseEntity<UserProfileResponseDTO> updateUser(
             @PathVariable Long id,
-            @RequestBody UserUpdateRequestDTO request
-    ) {
+            @RequestBody UserUpdateRequestDTO request) {
         UserProfileResponseDTO response = userService.updateUser(id, request);
         return ResponseEntity.ok(response);
     }
