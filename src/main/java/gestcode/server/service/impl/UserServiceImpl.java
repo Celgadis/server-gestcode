@@ -89,7 +89,7 @@ public class UserServiceImpl implements UserService {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuari no trobat"));
-
+        //es van modificant els camps rebuts.
         if (request.getFirstName() != null)
             user.setFirstName(request.getFirstName());
         if (request.getLastName1() != null)

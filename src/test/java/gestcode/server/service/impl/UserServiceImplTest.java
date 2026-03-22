@@ -55,8 +55,8 @@ public class UserServiceImplTest {
         savedUser.setEmail("test@example.com");
         savedUser.setFirstName("Test");
         savedUser.setLastName1("User");
-        savedUser.setStatus(UserStatus.PENDING_ACTIVATION);
-        savedUser.setEnabled(false);
+        savedUser.setStatus(UserStatus.ACTIVE);
+        savedUser.setEnabled(true);
         savedUser.setRole(Role.USER);
 
         when(passwordEncoder.encode(any())).thenReturn("encodedPassword");
@@ -67,8 +67,8 @@ public class UserServiceImplTest {
         assertNotNull(response);
         assertEquals(1L, response.getId());
         assertEquals("testuser", response.getUsername());
-        assertEquals(UserStatus.PENDING_ACTIVATION, response.getStatus());
-        assertFalse(response.isEnabled());
+        assertEquals(UserStatus.ACTIVE, response.getStatus());
+        assertTrue(response.isEnabled());
         assertEquals(Role.USER, response.getRole());
 
         verify(userRepository, times(1)).save(any(User.class));
@@ -82,7 +82,7 @@ public class UserServiceImplTest {
             () -> userService.registerUser(registerRequest));
 
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-        assertTrue(exception.getReason().contains("Username already exists"));
+        assertTrue(exception.getReason().contains("El nom d'usuari ja existeix"));
 
         verify(userRepository, never()).save(any(User.class));
     }
@@ -96,7 +96,7 @@ public class UserServiceImplTest {
             () -> userService.registerUser(registerRequest));
 
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-        assertTrue(exception.getReason().contains("Email already exists"));
+        assertTrue(exception.getReason().contains("El correu electrònic ja existeix"));
 
         verify(userRepository, never()).save(any(User.class));
     }
