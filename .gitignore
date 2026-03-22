@@ -53,3 +53,10 @@ build/
 application-local.properties
 application-prod.properties
 application.properties
+
+# Docs
+/documentacio/
+*.md
+!README.md
+!**/README.md
+*.zip
