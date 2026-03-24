@@ -4,6 +4,11 @@
  */
 package gestcode.server.model.enums;
 
+/**
+ * Enumeració per definir els rols dels usuaris.
+ *
+ * @author Jordi Verdalet Carrera
+ */
 public enum Role {
     USER,
     ADMIN

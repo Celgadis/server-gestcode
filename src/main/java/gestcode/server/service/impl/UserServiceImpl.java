@@ -25,17 +25,38 @@ import java.util.stream.Collectors;
 
 import gestcode.server.security.CustomUserDetails;
 
+/**
+ * Implementació de la interfície UserService per gestionar la lògica del negoci
+ * relacionada amb els Usuaris.
+ *
+ * @author Jordi Verdalet Carrera
+ */
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * Constructor del servei d'usuaris.
+     *
+     * @param userRepository  Repositori d'usuaris.
+     * @param passwordEncoder Encriptador de contrasenyes.
+     * @author Jordi Verdalet Carrera
+     */
     public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * Registra un nou usuari assegurant-se que ni l'username ni correu existeixin,
+     * i assignant-li permisos i estats per defecte.
+     *
+     * @param request Dades de registre de l'usuari.
+     * @return El perfil de l'usuari registrat si tot esta correcte.
+     * @author Jordi Verdalet Carrera
+     */
     @Override
     @Transactional
     public UserProfileResponseDTO registerUser(UserRegisterRequestDTO request) {
@@ -63,6 +84,15 @@ public class UserServiceImpl implements UserService {
         return mapToProfileResponse(savedUser);
     }
 
+    /**
+     * Obté un usuari específic a partir del seu ID. Només permet veure el propi
+     * perfil
+     * si no s'és admin.
+     *
+     * @param id L'identificador de l'usuari.
+     * @return El perfil corresponent.
+     * @author Jordi Verdalet Carrera
+     */
     @Override
     @Transactional(readOnly = true)
     public UserProfileResponseDTO getUserById(Long id) {
@@ -72,6 +102,12 @@ public class UserServiceImpl implements UserService {
         return mapToProfileResponse(user);
     }
 
+    /**
+     * Extreu el perfil corresponent al JWT.
+     *
+     * @return El propi perfil logejat.
+     * @author Jordi Verdalet Carrera
+     */
     @Override
     @Transactional(readOnly = true)
     public UserProfileResponseDTO getMe() {
@@ -82,6 +118,16 @@ public class UserServiceImpl implements UserService {
         return mapToProfileResponse(user);
     }
 
+    /**
+     * Processa canvis fets a l'usuari. S'apliquen comprovacions de rols
+     * d'administrador
+     * en el cas d'intentar actualitzar paràmetres com "Status", "Role" i "Enabled".
+     *
+     * @param id      Identificador de l'usuari a modificar.
+     * @param request Les modificacions a efectuar.
+     * @return Dades del perfil amb les modificacions
+     * @author Jordi Verdalet Carrera
+     */
     @Override
     @Transactional
     public UserProfileResponseDTO updateUser(Long id, UserUpdateRequestDTO request) {
@@ -89,7 +135,7 @@ public class UserServiceImpl implements UserService {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuari no trobat"));
-        //es van modificant els camps rebuts.
+        // es van modificant els camps rebuts.
         if (request.getFirstName() != null)
             user.setFirstName(request.getFirstName());
         if (request.getLastName1() != null)
@@ -114,6 +160,14 @@ public class UserServiceImpl implements UserService {
         return mapToProfileResponse(updatedUser);
     }
 
+    /**
+     * Llista paginada d'usuaris, aplicant-hi filtres i paginació.
+     *
+     * @param keyword  Paraula clau utilitzada a la barra cercadora opcional.
+     * @param pageable Pàgina, tipus i mida.
+     * @return El DTO que encapsula la llista d'usuaris.
+     * @author Jordi Verdalet Carrera
+     */
     @Override
     @Transactional(readOnly = true)
     public UserListResponseDTO listUsers(String keyword, Pageable pageable) {
@@ -145,6 +199,14 @@ public class UserServiceImpl implements UserService {
         return response;
     }
 
+    /**
+     * Transforma i mapeja l'entitat Usuari cap a un DTO de només lectura limitat
+     * d'informació, amagant passwords.
+     *
+     * @param user Entitat obtinguda des de la BD.
+     * @return Perfil llest per trametre com a Response json a l'interfície API.
+     * @author Jordi Verdalet Carrera
+     */
     private UserProfileResponseDTO mapToProfileResponse(User user) {
         UserProfileResponseDTO dto = new UserProfileResponseDTO();
         dto.setId(user.getId());
@@ -160,12 +222,25 @@ public class UserServiceImpl implements UserService {
         return dto;
     }
 
+    /**
+     * Determina si l'actual sol·licitant es administrador.
+     *
+     * @return verdader si té rol admin.
+     * @author Jordi Verdalet Carrera
+     */
     private boolean isCurrentUserAdmin() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return authentication != null && authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
     }
 
+    /**
+     * Comprovació de drets d'accés,bloqueja la funció amb excepcions.
+     *
+     * @param targetUserId Identificador a analitzar contra.
+     * @param errorMessage Missatge d'error.
+     * @author Jordi Verdalet Carrera
+     */
     private void verifyUserAccess(Long targetUserId, String errorMessage) {
         if (isCurrentUserAdmin()) {
             return; // els admins poden accedir a qualsevol usuari

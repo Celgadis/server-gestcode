@@ -4,6 +4,11 @@
  */
 package gestcode.server.model.enums;
 
+/**
+ * Enumeració per definir els possibles estats d'un usuari.
+ *
+ * @author Jordi Verdalet Carrera
+ */
 public enum UserStatus {
     ACTIVE,
     INACTIVE,

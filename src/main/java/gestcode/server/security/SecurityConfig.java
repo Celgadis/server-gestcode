@@ -17,6 +17,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Classe principal de configuració de seguretat (Spring Security).
+ * Gestiona les rutes permeses, els filtres, i proveïdors d'autenticació.
+ *
+ * @author Jordi Verdalet Carrera
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -25,11 +31,26 @@ public class SecurityConfig {
     private final JwtFilter jwtFilter;
     private final CustomUserDetailsService userDetailsService;
 
+    /**
+     * Constructor del SecurityConfig.
+     *
+     * @param jwtFilter          Filtre de JWT custom.
+     * @param userDetailsService Servei per obtenir detalls d'usuaris.
+     * @author Jordi Verdalet Carrera
+     */
     public SecurityConfig(JwtFilter jwtFilter, CustomUserDetailsService userDetailsService) {
         this.jwtFilter = jwtFilter;
         this.userDetailsService = userDetailsService;
     }
 
+    /**
+     * Configura la cadena de filtres de seguretat.
+     *
+     * @param http L'objecte HttpSecurity a configurar.
+     * @return La SecurityFilterChain inicialitzada.
+     * @throws Exception Si falla la configuració.
+     * @author Jordi Verdalet Carrera
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -47,6 +68,13 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Proporciona la implementació base per proveir l'autenticació amb Data Access
+     * Object (DAO) juntament amb l'encriptador de contrasenyes.
+     *
+     * @return El proveïdor d'autenticació.
+     * @author Jordi Verdalet Carrera
+     */
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
@@ -54,11 +82,27 @@ public class SecurityConfig {
         return authProvider;
     }
 
+    /**
+     * Exposa el gestor d'autenticació principal emprat per a logejar-se de
+     * l'aplicació.
+     *
+     * @param config Configuració d'autenticació de Spring.
+     * @return Gestor d'autenticació.
+     * @throws Exception Si no es pot obtenir l'AuthenticationManager.
+     * @author Jordi Verdalet Carrera
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
+    /**
+     * Defineix l'algoritme de codificació de password BCryptPasswordEncoder pel
+     * sistema.
+     *
+     * @return El PasswordEncoder inicialitzat.
+     * @author Jordi Verdalet Carrera
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

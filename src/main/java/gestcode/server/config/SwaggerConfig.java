@@ -9,11 +9,22 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuració de Swagger/OpenAPI per a la documentació de l'API REST.
+ *
+ * @author Jordi Verdalet Carrera
+ */
 @Configuration
 public class SwaggerConfig {
 
         private static final String SECURITY_SCHEME_NAME = "bearerAuth";
 
+        /**
+         * Crea i configura el bean OpenAPI amb la informació de l'API i la seguretat JWT.
+         *
+         * @return L'objecte OpenAPI configurat.
+         * @author Jordi Verdalet Carrera
+         */
         @Bean
         public OpenAPI customOpenAPI() {
                 return new OpenAPI()

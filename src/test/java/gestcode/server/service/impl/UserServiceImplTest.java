@@ -46,9 +46,11 @@ public class UserServiceImplTest {
 
     @Test
     void registerUser_Success() {
+        // 1. Configurar que no hi hagi conflicte amb nom d'usuari ni correu
         when(userRepository.existsByUsername("testuser")).thenReturn(false);
         when(userRepository.existsByEmail("test@example.com")).thenReturn(false);
 
+        // 2. Preparar l'usuari que es guardarà a base de dades
         User savedUser = new User();
         savedUser.setId(1L);
         savedUser.setUsername("testuser");
@@ -62,8 +64,10 @@ public class UserServiceImplTest {
         when(passwordEncoder.encode(any())).thenReturn("encodedPassword");
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
+        // 3. Cridar el mètode del servei
         UserProfileResponseDTO response = userService.registerUser(registerRequest);
 
+        // 4. Comprovar que la resposta inclou els valors correctes
         assertNotNull(response);
         assertEquals(1L, response.getId());
         assertEquals("testuser", response.getUsername());
@@ -71,33 +75,42 @@ public class UserServiceImplTest {
         assertTrue(response.isEnabled());
         assertEquals(Role.USER, response.getRole());
 
+        // 5. Verificar que s'ha guardat l'usuari un cop
         verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
     void registerUser_UsernameExists() {
+        // 1. Simular que el nom d'usuari ja està agafat
         when(userRepository.existsByUsername("testuser")).thenReturn(true);
 
+        // 2. Cridar al servei i esperar que llanci una excepció
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, 
             () -> userService.registerUser(registerRequest));
 
+        // 3. Comprovar que l'excepció indica el motiu del conflicte (Bad Request)
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
         assertTrue(exception.getReason().contains("El nom d'usuari ja existeix"));
 
+        // 4. Verificar que no s'arriba a guardar cap usuari
         verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
     void registerUser_EmailExists() {
+        // 1. Simular que el nom d'usuari està lliure però el correu està agafat
         when(userRepository.existsByUsername("testuser")).thenReturn(false);
         when(userRepository.existsByEmail("test@example.com")).thenReturn(true);
 
+        // 2. Cridar al servei i esperar que llanci una excepció
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, 
             () -> userService.registerUser(registerRequest));
 
+        // 3. Comprovar que l'excepció indica el motiu del conflicte (Bad Request)
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
         assertTrue(exception.getReason().contains("El correu electrònic ja existeix"));
 
+        // 4. Verificar que no s'arriba a guardar cap usuari
         verify(userRepository, never()).save(any(User.class));
     }
 }

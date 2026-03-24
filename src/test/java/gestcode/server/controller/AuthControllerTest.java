@@ -49,6 +49,7 @@ public class AuthControllerTest {
 
     @Test
     void registerUser_Success() throws Exception {
+        // 1. Preparar dades de la petició de registre
         UserRegisterRequestDTO request = new UserRegisterRequestDTO();
         request.setUsername("testuser");
         request.setPassword("password123");
@@ -56,6 +57,7 @@ public class AuthControllerTest {
         request.setLastName1("User");
         request.setEmail("test@example.com");
 
+        // 2. Preparar el resultat esperat del servei
         UserProfileResponseDTO response = new UserProfileResponseDTO();
         response.setId(1L);
         response.setUsername("testuser");
@@ -66,9 +68,11 @@ public class AuthControllerTest {
 
         when(userService.registerUser(any(UserRegisterRequestDTO.class))).thenReturn(response);
 
+        // 3. Executar la petició POST a /api/auth/register
         mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
+                // 4. Comprovar la resposta i les dades retornades
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.username").value("testuser"))
@@ -79,9 +83,10 @@ public class AuthControllerTest {
 
     @Test
     void registerUser_ValidationFailure() throws Exception {
+        // 1. Preparar dades de petició invàlides (buides)
         UserRegisterRequestDTO request = new UserRegisterRequestDTO();
-        // Missing required fields
 
+        // 2. Executar la petició POST i comprovar que retorna Bad Request
         mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
