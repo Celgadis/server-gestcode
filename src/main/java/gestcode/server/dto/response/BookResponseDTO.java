@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 /**
  * DTO (Data Transfer Object) de resposta d'un llibre.
  * Conté totes les dades públiques de l'entitat de la base de dades.
+ * El camp {@code myRating} conté la puntuació de l'usuari autenticat per a
+ * aquest llibre, o {@code null} si l'usuari no ha puntuat el llibre o no
+ * s'ha autenticat.
  *
  * @author Jordi Verdalet Carrera
  */
@@ -21,11 +24,29 @@ public class BookResponseDTO {
     private String description;
     private int quantity;
     private double rating;
+    private Double myRating;
     private LocalDateTime createdAt;
 
     public BookResponseDTO() {
     }
 
+    /**
+     * Constructor sense el camp myRating (per mantenir compatibilitat).
+     *
+     * @param id          L'identificador del llibre.
+     * @param isbn        L'ISBN del llibre.
+     * @param title       El títol del llibre.
+     * @param author      L'autor del llibre.
+     * @param year        L'any de publicació.
+     * @param genre       El gènere literari.
+     * @param pages       El nombre de pàgines.
+     * @param language    L'idioma del llibre.
+     * @param description La descripció del llibre.
+     * @param quantity    La quantitat de còpies disponibles.
+     * @param rating      La mitjana de puntuació global del llibre.
+     * @param createdAt   La data de creació del registre.
+     * @author Jordi Verdalet Carrera
+     */
     public BookResponseDTO(Long id, String isbn, String title, String author, int year, String genre, int pages,
             String language, String description, int quantity, double rating, LocalDateTime createdAt) {
         this.id = id;
@@ -39,6 +60,42 @@ public class BookResponseDTO {
         this.description = description;
         this.quantity = quantity;
         this.rating = rating;
+        this.myRating = null;
+        this.createdAt = createdAt;
+    }
+
+    /**
+     * Constructor complet amb el camp myRating.
+     *
+     * @param id          L'identificador del llibre.
+     * @param isbn        L'ISBN del llibre.
+     * @param title       El títol del llibre.
+     * @param author      L'autor del llibre.
+     * @param year        L'any de publicació.
+     * @param genre       El gènere literari.
+     * @param pages       El nombre de pàgines.
+     * @param language    L'idioma del llibre.
+     * @param description La descripció del llibre.
+     * @param quantity    La quantitat de còpies disponibles.
+     * @param rating      La mitjana de puntuació global del llibre.
+     * @param myRating    La puntuació de l'usuari autenticat (pot ser null).
+     * @param createdAt   La data de creació del registre.
+     * @author Jordi Verdalet Carrera
+     */
+    public BookResponseDTO(Long id, String isbn, String title, String author, int year, String genre, int pages,
+            String language, String description, int quantity, double rating, Double myRating, LocalDateTime createdAt) {
+        this.id = id;
+        this.isbn = isbn;
+        this.title = title;
+        this.author = author;
+        this.year = year;
+        this.genre = genre;
+        this.pages = pages;
+        this.language = language;
+        this.description = description;
+        this.quantity = quantity;
+        this.rating = rating;
+        this.myRating = myRating;
         this.createdAt = createdAt;
     }
 
@@ -130,6 +187,27 @@ public class BookResponseDTO {
 
     public void setRating(double rating) {
         this.rating = rating;
+    }
+
+    /**
+     * Obté la puntuació de l'usuari autenticat per a aquest llibre.
+     * Retorna null si l'usuari no ha puntuat el llibre o no està autenticat.
+     *
+     * @return La puntuació de l'usuari, o null.
+     * @author Jordi Verdalet Carrera
+     */
+    public Double getMyRating() {
+        return myRating;
+    }
+
+    /**
+     * Estableix la puntuació de l'usuari autenticat per a aquest llibre.
+     *
+     * @param myRating La puntuació de l'usuari, o null.
+     * @author Jordi Verdalet Carrera
+     */
+    public void setMyRating(Double myRating) {
+        this.myRating = myRating;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -4,7 +4,11 @@ import gestcode.server.dto.request.BookCreateRequestDTO;
 import gestcode.server.dto.request.BookUpdateRequestDTO;
 import gestcode.server.dto.response.BookResponseDTO;
 import gestcode.server.model.entity.Book;
+import gestcode.server.model.entity.User;
+import gestcode.server.model.entity.UserBookRating;
 import gestcode.server.repository.BookRepository;
+import gestcode.server.repository.UserBookRatingRepository;
+import gestcode.server.repository.UserRepository;
 import gestcode.server.service.BookService;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +18,11 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Implementació del servei d'entitats Book.
@@ -27,15 +33,23 @@ import java.util.List;
 public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
+    private final UserBookRatingRepository ratingRepository;
+    private final UserRepository userRepository;
 
     /**
-     * Constructor que injecta el repositori de llibres.
+     * Constructor que injecta els repositoris necessaris.
      *
-     * @param bookRepository Repositori de la base de dades.
+     * @param bookRepository   Repositori de la base de dades de llibres.
+     * @param ratingRepository Repositori de puntuacions.
+     * @param userRepository   Repositori d'usuaris.
      */
     @Autowired
-    public BookServiceImpl(BookRepository bookRepository) {
+    public BookServiceImpl(BookRepository bookRepository,
+            UserBookRatingRepository ratingRepository,
+            UserRepository userRepository) {
         this.bookRepository = bookRepository;
+        this.ratingRepository = ratingRepository;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -47,6 +61,7 @@ public class BookServiceImpl implements BookService {
      * @return El DTO del llibre creat guardat.
      */
     @Override
+    @Transactional
     public BookResponseDTO createBook(BookCreateRequestDTO bookDTO) {
         if (bookRepository.existsByIsbn(bookDTO.getIsbn())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aquest ISBN ja existeix");
@@ -66,7 +81,7 @@ public class BookServiceImpl implements BookService {
                 0.0);
 
         Book savedBook = bookRepository.save(book);
-        return mapToDTO(savedBook);
+        return mapToDTO(savedBook, null);
     }
 
     /**
@@ -78,6 +93,7 @@ public class BookServiceImpl implements BookService {
      * @return El DTO resultant després d'aplicar la modificació.
      */
     @Override
+    @Transactional
     public BookResponseDTO updateBook(Long id, BookUpdateRequestDTO bookDTO) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Llibre no trobat"));
@@ -100,7 +116,7 @@ public class BookServiceImpl implements BookService {
         // autogestionat pels comentaris que s'implementarà més endavant.
 
         Book updatedBook = bookRepository.save(book);
-        return mapToDTO(updatedBook);
+        return mapToDTO(updatedBook, null);
     }
 
     /**
@@ -109,6 +125,7 @@ public class BookServiceImpl implements BookService {
      * @param id L'identificador del llibre a eliminar.
      */
     @Override
+    @Transactional
     public void deleteBook(Long id) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Llibre no trobat"));
@@ -118,15 +135,48 @@ public class BookServiceImpl implements BookService {
 
     /**
      * Obté la informació d'un llibre específic cercat pel seu ID.
+     * No inclou la puntuació personal de cap usuari (myRating = null).
      *
      * @param id Identificador per buscar.
      * @return DTO amb tots els detalls del llibre.
+     * @author Jordi Verdalet Carrera
      */
     @Override
+    @Transactional(readOnly = true)
     public BookResponseDTO getBookById(Long id) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Llibre no trobat"));
-        return mapToDTO(book);
+        return mapToDTO(book, null);
+    }
+
+    /**
+     * Obté la informació d'un llibre específic cercat pel seu ID,
+     * incloent la puntuació personal de l'usuari autenticat (myRating).
+     * Si l'usuari no existeix o no ha puntuat el llibre, myRating serà null.
+     *
+     * @param id       Identificador del llibre per buscar.
+     * @param username El nom d'usuari autenticat extret del token JWT.
+     * @return DTO amb tots els detalls del llibre incloent myRating.
+     * @author Jordi Verdalet Carrera
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public BookResponseDTO getBookById(Long id, String username) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Llibre no trobat"));
+
+        Double myRating = null;
+        if (username != null) {
+            Optional<User> userOpt = userRepository.findByUsername(username);
+            if (userOpt.isPresent()) {
+                myRating = ratingRepository
+                        .findActiveByUserIdAndBookId(userOpt.get().getId(), book.getId())
+                        .map(UserBookRating::getRating)
+                        .orElse(null);
+            }
+        }
+
+        return mapToDTO(book, myRating);
     }
 
     /**
@@ -144,6 +194,7 @@ public class BookServiceImpl implements BookService {
      * @return Entitat Page que conté els llibres paginats i mapejats a DTO.
      */
     @Override
+    @Transactional(readOnly = true)
     public Page<BookResponseDTO> getBooks(String title, String author, Integer year, String genre, String language,
             Double rating, Pageable pageable) {
         Specification<Book> spec = (root, query, cb) -> {
@@ -173,17 +224,19 @@ public class BookServiceImpl implements BookService {
         };
 
         Page<Book> booksPage = bookRepository.findAll(spec, pageable);
-        return booksPage.map(this::mapToDTO);
+        return booksPage.map(b -> mapToDTO(b, null));
     }
 
     /**
      * Mètode privat d'ajuda per transformar l'entitat de base de dades cap al DTO
-     * de resposta.
+     * de resposta, incloent la puntuació personal de l'usuari si es proporciona.
      *
-     * @param book Entitat Book.
+     * @param book     Entitat Book.
+     * @param myRating La puntuació personal de l'usuari autenticat, o null.
      * @return El pertinent BookResponseDTO preparat.
+     * @author Jordi Verdalet Carrera
      */
-    private BookResponseDTO mapToDTO(Book book) {
+    private BookResponseDTO mapToDTO(Book book, Double myRating) {
         return new BookResponseDTO(
                 book.getId(),
                 book.getIsbn(),
@@ -196,6 +249,7 @@ public class BookServiceImpl implements BookService {
                 book.getDescription(),
                 book.getQuantity(),
                 book.getRating(),
+                myRating,
                 book.getCreatedAt());
     }
 }

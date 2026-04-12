@@ -4,12 +4,8 @@
  */
 package gestcode.server.model.entity;
 
-import gestcode.server.model.enums.Role;
-import gestcode.server.model.enums.UserStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -58,11 +54,17 @@ public class Book {
     @Column(nullable = false)
     private int quantity;
 
-    @Column(nullable = false)
-    private double rating;
+    @Column(nullable = false, columnDefinition = "DOUBLE DEFAULT 0")
+    private Double rating = 0.0;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    /**
+     * Constructor per defecte
+     */
+    public Book() {
+    }
 
     public Book(String isbn, String title, String author, int year, String genre, int pages, String language,
             String description, int quantity, double rating) {

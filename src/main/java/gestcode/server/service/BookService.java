@@ -39,11 +39,25 @@ public interface BookService {
 
     /**
      * Obté les dades d'un llibre pel seu identificador.
+     * No inclou la puntuació personal de cap usuari (myRating = null).
      *
      * @param id L'identificador del llibre.
      * @return El llibre en format DTO.
+     * @author Jordi Verdalet Carrera
      */
     BookResponseDTO getBookById(Long id);
+
+    /**
+     * Obté les dades d'un llibre pel seu identificador, incloent la puntuació
+     * personal de l'usuari autenticat en el camp {@code myRating}.
+     * Si l'usuari no ha puntuat el llibre o el username és null, myRating serà null.
+     *
+     * @param id       L'identificador del llibre.
+     * @param username El nom d'usuari autenticat extret del token JWT, o null.
+     * @return El llibre en format DTO amb myRating omplert si escau.
+     * @author Jordi Verdalet Carrera
+     */
+    BookResponseDTO getBookById(Long id, String username);
 
     /**
      * Llista llibres de forma paginada amb filtres opcionals.
