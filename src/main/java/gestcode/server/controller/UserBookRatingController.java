@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -79,20 +80,20 @@ public class UserBookRatingController {
      */
     @Operation(
         summary = "Les meves puntuacions",
-        description = "Retorna totes les puntuacions de l'usuari autenticat. (Requereix USER o ADMIN)"
+        description = "Retorna totes les puntuacions de l'usuari autenticat. Suporta paginació (page, size, sort). (Requereix USER o ADMIN)"
     )
     @ApiResponse(responseCode = "200", description = "Llistat obtingut correctament")
     @GetMapping("/my")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Page<RatingResponseDTO>> getMyRatings(
             Authentication authentication,
-            @Parameter(hidden = true) Pageable pageable) {
+            @ParameterObject Pageable pageable) {
         Page<RatingResponseDTO> response = ratingService.getMyRatings(authentication.getName(), pageable);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     /**
-     * Endpoint per obtenir totes les puntuacions del sistema, amb filtres opcionals
+     * Endpoint per obtenir totes les puntuacions del sistema, com filtres opcionals
      * per usuari i/o llibre. Només accessible per administradors.
      *
      * @param userId   Filtre opcional per l'identificador de l'usuari.
@@ -103,7 +104,7 @@ public class UserBookRatingController {
      */
     @Operation(
         summary = "Llistar totes les puntuacions",
-        description = "Retorna totes les puntuacions del sistema amb filtres opcionals. (Requereix ADMIN)"
+        description = "Retorna totes les puntuacions del sistema amb filtres opcionals. Suporta paginació (page, size, sort). (Requereix ADMIN)"
     )
     @ApiResponse(responseCode = "200", description = "Llistat obtingut correctament")
     @GetMapping
@@ -111,7 +112,7 @@ public class UserBookRatingController {
     public ResponseEntity<Page<RatingResponseDTO>> getAllRatings(
             @Parameter(description = "Filtre per ID d'usuari") @RequestParam(required = false) Long userId,
             @Parameter(description = "Filtre per ID de llibre") @RequestParam(required = false) Long bookId,
-            @Parameter(hidden = true) Pageable pageable) {
+            @ParameterObject Pageable pageable) {
         Page<RatingResponseDTO> response = ratingService.getAllRatings(userId, bookId, pageable);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -127,7 +128,7 @@ public class UserBookRatingController {
      */
     @Operation(
         summary = "Puntuacions d'un llibre",
-        description = "Retorna totes les puntuacions d'un llibre concret. (Requereix ADMIN)"
+        description = "Retorna totes les puntuacions d'un llibre concret. Suporta paginació (page, size, sort). (Requereix ADMIN)"
     )
     @ApiResponse(responseCode = "200", description = "Llistat obtingut correctament")
     @ApiResponse(responseCode = "404", description = "Llibre no trobat")
@@ -135,7 +136,7 @@ public class UserBookRatingController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<RatingResponseDTO>> getRatingsByBook(
             @PathVariable Long bookId,
-            @Parameter(hidden = true) Pageable pageable) {
+            @ParameterObject Pageable pageable) {
         Page<RatingResponseDTO> response = ratingService.getRatingsByBook(bookId, pageable);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -151,7 +152,7 @@ public class UserBookRatingController {
      */
     @Operation(
         summary = "Puntuacions d'un usuari",
-        description = "Retorna totes les puntuacions d'un usuari concret. (Requereix ADMIN)"
+        description = "Retorna totes les puntuacions d'un usuari concret. Suporta paginació (page, size, sort). (Requereix ADMIN)"
     )
     @ApiResponse(responseCode = "200", description = "Llistat obtingut correctament")
     @ApiResponse(responseCode = "404", description = "Usuari no trobat")
@@ -159,7 +160,7 @@ public class UserBookRatingController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<RatingResponseDTO>> getRatingsByUser(
             @PathVariable Long userId,
-            @Parameter(hidden = true) Pageable pageable) {
+            @ParameterObject Pageable pageable) {
         Page<RatingResponseDTO> response = ratingService.getRatingsByUser(userId, pageable);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

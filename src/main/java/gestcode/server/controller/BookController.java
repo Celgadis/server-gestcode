@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -104,14 +105,14 @@ public class BookController {
      * @return Les dades del llibre, incloent myRating si l'usuari està autenticat.
      * @author Jordi Verdalet Carrera
      */
-    @Operation(summary = "Obtenir llibre", description = "Accedeix a les dades públiques d'un llibre. Si l'usuari està autenticat, inclou la seva puntuació (myRating). Opcionalment pot incloure els comentaris paginats. (Accessible per usuaris i administradors)")
+    @Operation(summary = "Obtenir llibre", description = "Accedeix a les dades públiques d'un llibre. Si l'usuari està autenticat, inclou la seva puntuació (myRating). Opcionalment pot incloure els comentaris paginats (commentPage i commentSize). (Accessible per usuaris i administradors)")
     @ApiResponse(responseCode = "200", description = "Dades obtingudes")
     @ApiResponse(responseCode = "404", description = "Llibre no trobat")
     @GetMapping("/{id}")
     public ResponseEntity<BookResponseDTO> getBookById(
             @PathVariable Long id,
             @Parameter(description = "Si s'han d'incloure els comentaris") @RequestParam(required = false, defaultValue = "false") boolean includeComments,
-            @Parameter(description = "Número de pàgina dels comentaris") @RequestParam(required = false, defaultValue = "0") int commentPage,
+            @Parameter(description = "Número de pàgina dels comentaris (començant per 0)") @RequestParam(required = false, defaultValue = "0") int commentPage,
             @Parameter(description = "Mida de la pàgina dels comentaris") @RequestParam(required = false, defaultValue = "10") int commentSize,
             Authentication authentication) {
         String username = (authentication != null) ? authentication.getName() : null;
@@ -132,7 +133,7 @@ public class BookController {
      * @param pageable Dades de paginació i ordenació.
      * @return Pàgina de llibres.
      */
-    @Operation(summary = "Llistar llibres", description = "Llista de llibres amb paginació i filtres. (Accessible per usuaris i administradors)")
+    @Operation(summary = "Llistar llibres", description = "Llista de llibres amb paginació i filtres. Suporta paginació (page, size, sort). (Accessible per usuaris i administradors)")
     @ApiResponse(responseCode = "200", description = "Llistat obtingut correctament")
     @GetMapping
     public ResponseEntity<Page<BookResponseDTO>> getBooks(
@@ -142,7 +143,7 @@ public class BookController {
             @Parameter(description = "Filtre per gènere (conté)") @RequestParam(required = false) String genre,
             @Parameter(description = "Filtre per idioma (exacte)") @RequestParam(required = false) String language,
             @Parameter(description = "Filtre per puntuació (mínima)") @RequestParam(required = false) Double rating,
-            @Parameter(hidden = true) Pageable pageable) {
+            @ParameterObject Pageable pageable) {
 
         Page<BookResponseDTO> response = bookService.getBooks(title, author, year, genre, language, rating, pageable);
         return new ResponseEntity<>(response, HttpStatus.OK);

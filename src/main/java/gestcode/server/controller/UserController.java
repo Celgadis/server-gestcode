@@ -5,6 +5,7 @@ import gestcode.server.dto.response.UserListResponseDTO;
 import gestcode.server.dto.response.UserProfileResponseDTO;
 import gestcode.server.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -82,12 +83,12 @@ public class UserController {
      */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Llistar usuaris", description = "Recupera una llista paginada d'usuaris, filtratge opcional per paraula clau")
+    @Operation(summary = "Llistar usuaris", description = "Recupera una llista paginada d'usuaris. Suporta paginació i filtratge opcional per paraula clau.")
     @ApiResponse(responseCode = "200", description = "Operació exitosa")
     public ResponseEntity<UserListResponseDTO> listUsers(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @Parameter(description = "Paraula clau per filtrar per nom o email") @RequestParam(required = false) String keyword,
+            @Parameter(description = "Número de pàgina (començant per 0)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Quantitat d'elements per pàgina") @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         UserListResponseDTO response = userService.listUsers(keyword, pageable);
         return ResponseEntity.ok(response);

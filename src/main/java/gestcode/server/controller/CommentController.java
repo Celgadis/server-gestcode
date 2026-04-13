@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -79,13 +80,13 @@ public class CommentController {
      * @return Pàgina de comentaris de l'usuari autenticat.
      * @author Jordi Verdalet Carrera
      */
-    @Operation(summary = "Els meus comentaris", description = "Retorna tots els comentaris de l'usuari autenticat. (Requereix USER o ADMIN)")
+    @Operation(summary = "Els meus comentaris", description = "Retorna tots els comentaris de l'usuari autenticat. Suporta paginació (page, size, sort). (Requereix USER o ADMIN)")
     @ApiResponse(responseCode = "200", description = "Llistat obtingut correctament")
     @GetMapping("/my")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Page<CommentResponseDTO>> getMyComments(
             Authentication authentication,
-            @Parameter(hidden = true) Pageable pageable) {
+            @ParameterObject Pageable pageable) {
         Page<CommentResponseDTO> response = commentService.getMyComments(authentication.getName(), pageable);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -100,14 +101,14 @@ public class CommentController {
      * @return Pàgina de comentaris filtrats.
      * @author Jordi Verdalet Carrera
      */
-    @Operation(summary = "Llistar tots els comentaris", description = "Retorna tots els comentaris del sistema amb filtres opcionals. (Requereix ADMIN)")
+    @Operation(summary = "Llistar tots els comentaris", description = "Retorna tots els comentaris del sistema amb filtres opcionals. Suporta paginació (page, size, sort). (Requereix ADMIN)")
     @ApiResponse(responseCode = "200", description = "Llistat obtingut correctament")
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<CommentResponseDTO>> getAllComments(
             @Parameter(description = "Filtre per ID d'usuari") @RequestParam(required = false) Long userId,
             @Parameter(description = "Filtre per ID de llibre") @RequestParam(required = false) Long bookId,
-            @Parameter(hidden = true) Pageable pageable) {
+            @ParameterObject Pageable pageable) {
         Page<CommentResponseDTO> response = commentService.getAllComments(userId, bookId, pageable);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -121,14 +122,14 @@ public class CommentController {
      * @return Pàgina de comentaris del llibre.
      * @author Jordi Verdalet Carrera
      */
-    @Operation(summary = "Comentaris d'un llibre", description = "Retorna tots els comentaris d'un llibre concret. (Requereix estar autenticat)")
+    @Operation(summary = "Comentaris d'un llibre", description = "Retorna tots els comentaris d'un llibre concret. Suporta paginació (page, size, sort). (Requereix estar autenticat)")
     @ApiResponse(responseCode = "200", description = "Llistat obtingut correctament")
     @ApiResponse(responseCode = "404", description = "Llibre no trobat")
     @GetMapping("/book/{bookId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Page<CommentResponseDTO>> getCommentsByBook(
             @PathVariable Long bookId,
-            @Parameter(hidden = true) Pageable pageable) {
+            @ParameterObject Pageable pageable) {
         Page<CommentResponseDTO> response = commentService.getCommentsByBook(bookId, pageable);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -142,14 +143,14 @@ public class CommentController {
      * @return Pàgina de comentaris de l'usuari.
      * @author Jordi Verdalet Carrera
      */
-    @Operation(summary = "Comentaris d'un usuari", description = "Retorna tots els comentaris d'un usuari concret. (Requereix ADMIN)")
+    @Operation(summary = "Comentaris d'un usuari", description = "Retorna tots els comentaris d'un usuari concret. Suporta paginació (page, size, sort). (Requereix ADMIN)")
     @ApiResponse(responseCode = "200", description = "Llistat obtingut correctament")
     @ApiResponse(responseCode = "404", description = "Usuari no trobat")
     @GetMapping("/user/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<CommentResponseDTO>> getCommentsByUser(
             @PathVariable Long userId,
-            @Parameter(hidden = true) Pageable pageable) {
+            @ParameterObject Pageable pageable) {
         Page<CommentResponseDTO> response = commentService.getCommentsByUser(userId, pageable);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
