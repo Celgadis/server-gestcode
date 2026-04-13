@@ -12,7 +12,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -102,15 +104,19 @@ public class BookController {
      * @return Les dades del llibre, incloent myRating si l'usuari està autenticat.
      * @author Jordi Verdalet Carrera
      */
-    @Operation(summary = "Obtenir llibre", description = "Accedeix a les dades públiques d'un llibre. Si l'usuari està autenticat, inclou la seva puntuació (myRating). (Accessible per usuaris i administradors)")
+    @Operation(summary = "Obtenir llibre", description = "Accedeix a les dades públiques d'un llibre. Si l'usuari està autenticat, inclou la seva puntuació (myRating). Opcionalment pot incloure els comentaris paginats. (Accessible per usuaris i administradors)")
     @ApiResponse(responseCode = "200", description = "Dades obtingudes")
     @ApiResponse(responseCode = "404", description = "Llibre no trobat")
     @GetMapping("/{id}")
     public ResponseEntity<BookResponseDTO> getBookById(
             @PathVariable Long id,
+            @Parameter(description = "Si s'han d'incloure els comentaris") @RequestParam(required = false, defaultValue = "false") boolean includeComments,
+            @Parameter(description = "Número de pàgina dels comentaris") @RequestParam(required = false, defaultValue = "0") int commentPage,
+            @Parameter(description = "Mida de la pàgina dels comentaris") @RequestParam(required = false, defaultValue = "5") int commentSize,
             Authentication authentication) {
         String username = (authentication != null) ? authentication.getName() : null;
-        BookResponseDTO response = bookService.getBookById(id, username);
+        Pageable commentPageable = PageRequest.of(commentPage, commentSize, Sort.by("createdAt").descending());
+        BookResponseDTO response = bookService.getBookById(id, username, includeComments, commentPageable);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

@@ -1,6 +1,9 @@
 package gestcode.server.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import org.springframework.data.domain.Page;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * DTO (Data Transfer Object) de resposta d'un llibre.
@@ -11,6 +14,7 @@ import java.time.LocalDateTime;
  *
  * @author Jordi Verdalet Carrera
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BookResponseDTO {
 
     private Long id;
@@ -25,6 +29,7 @@ public class BookResponseDTO {
     private int quantity;
     private double rating;
     private Double myRating;
+    private Page<CommentResponseDTO> comments;
     private LocalDateTime createdAt;
 
     public BookResponseDTO() {
@@ -216,6 +221,26 @@ public class BookResponseDTO {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    /**
+     * Obté la pàgina de comentaris associats al llibre.
+     *
+     * @return La pàgina de comentaris.
+     * @author Jordi Verdalet Carrera
+     */
+    public Page<CommentResponseDTO> getComments() {
+        return comments;
+    }
+
+    /**
+     * Estableix la pàgina de comentaris associats al llibre.
+     *
+     * @param comments La pàgina de comentaris.
+     * @author Jordi Verdalet Carrera
+     */
+    public void setComments(Page<CommentResponseDTO> comments) {
+        this.comments = comments;
     }
 
 }

@@ -3,10 +3,13 @@ package gestcode.server.service.impl;
 import gestcode.server.dto.request.BookCreateRequestDTO;
 import gestcode.server.dto.request.BookUpdateRequestDTO;
 import gestcode.server.dto.response.BookResponseDTO;
+import gestcode.server.dto.response.CommentResponseDTO;
 import gestcode.server.model.entity.Book;
+import gestcode.server.model.entity.Comment;
 import gestcode.server.model.entity.User;
 import gestcode.server.model.entity.UserBookRating;
 import gestcode.server.repository.BookRepository;
+import gestcode.server.repository.CommentRepository;
 import gestcode.server.repository.UserBookRatingRepository;
 import gestcode.server.repository.UserRepository;
 import gestcode.server.service.BookService;
@@ -19,6 +22,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.transaction.annotation.Transactional;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +40,7 @@ public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final UserBookRatingRepository ratingRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
 
     /**
      * Constructor que injecta els repositoris necessaris.
@@ -46,10 +52,12 @@ public class BookServiceImpl implements BookService {
     @Autowired
     public BookServiceImpl(BookRepository bookRepository,
             UserBookRatingRepository ratingRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            CommentRepository commentRepository) {
         this.bookRepository = bookRepository;
         this.ratingRepository = ratingRepository;
         this.userRepository = userRepository;
+        this.commentRepository = commentRepository;
     }
 
     /**
@@ -103,17 +111,43 @@ public class BookServiceImpl implements BookService {
                     "Aquest ISBN ja està utilitzat per un altre llibre");
         }
 
-        book.setIsbn(bookDTO.getIsbn());
-        book.setTitle(bookDTO.getTitle());
-        book.setAuthor(bookDTO.getAuthor());
-        book.setYear(bookDTO.getYear());
-        book.setGenre(bookDTO.getGenre());
-        book.setPages(bookDTO.getPages());
-        book.setLanguage(bookDTO.getLanguage());
-        book.setDescription(bookDTO.getDescription());
-        book.setQuantity(bookDTO.getQuantity());
-        // El rating no s'actualitza manualment amb l'edició, s'espera que sigui un camp
-        // autogestionat pels comentaris que s'implementarà més endavant.
+        if (bookDTO.getIsbn() != null) {
+            book.setIsbn(bookDTO.getIsbn());
+        }
+
+        if (bookDTO.getTitle() != null) {
+            book.setTitle(bookDTO.getTitle());
+        }
+
+        if (bookDTO.getAuthor() != null) {
+            book.setAuthor(bookDTO.getAuthor());
+        }
+
+        if (bookDTO.getYear() != null) {
+            book.setYear(bookDTO.getYear());
+        }
+
+        if (bookDTO.getGenre() != null) {
+            book.setGenre(bookDTO.getGenre());
+        }
+
+        if (bookDTO.getPages() != null) {
+            book.setPages(bookDTO.getPages());
+        }
+
+        if (bookDTO.getLanguage() != null) {
+            book.setLanguage(bookDTO.getLanguage());
+        }
+
+        if (bookDTO.getDescription() != null) {
+            book.setDescription(bookDTO.getDescription());
+        }
+
+        if (bookDTO.getQuantity() != null) {
+            book.setQuantity(bookDTO.getQuantity());
+        }
+        // El rating no s'actualitza manualment amb l'edició, s'actualitza a través
+        // de les puntuacions que fan els usuaris.
 
         Book updatedBook = bookRepository.save(book);
         return mapToDTO(updatedBook, null);
@@ -144,9 +178,7 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional(readOnly = true)
     public BookResponseDTO getBookById(Long id) {
-        Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Llibre no trobat"));
-        return mapToDTO(book, null);
+        return getBookById(id, null, false, null);
     }
 
     /**
@@ -162,6 +194,24 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional(readOnly = true)
     public BookResponseDTO getBookById(Long id, String username) {
+        return getBookById(id, username, false, null);
+    }
+
+    /**
+     * Obté la informació d'un llibre específic cercat pel seu ID,
+     * amb la possibilitat d'incloure els comentaris de forma paginada
+     * i la puntuació personal de l'usuari autenticat.
+     *
+     * @param id               Identificador del llibre per buscar.
+     * @param username         El nom d'usuari autenticat, o null.
+     * @param includeComments  Si s'han d'incloure els comentaris.
+     * @param commentPageable  Dades de paginació per als comentaris (pot ser null si includeComments és false).
+     * @return DTO amb els detalls del llibre, myRating i opcionalment els comentaris.
+     * @author Jordi Verdalet Carrera
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public BookResponseDTO getBookById(Long id, String username, boolean includeComments, Pageable commentPageable) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Llibre no trobat"));
 
@@ -176,7 +226,14 @@ public class BookServiceImpl implements BookService {
             }
         }
 
-        return mapToDTO(book, myRating);
+        BookResponseDTO dto = mapToDTO(book, myRating);
+
+        if (includeComments && commentPageable != null) {
+            Page<Comment> commentsPage = commentRepository.findByBookIdWithDetails(id, commentPageable);
+            dto.setComments(commentsPage.map(this::mapCommentToDTO));
+        }
+
+        return dto;
     }
 
     /**
@@ -251,5 +308,25 @@ public class BookServiceImpl implements BookService {
                 book.getRating(),
                 myRating,
                 book.getCreatedAt());
+    }
+
+    /**
+     * Mètode privat d'ajuda per transformar l'entitat Comment al DTO de
+     * resposta.
+     *
+     * @param comment Entitat Comment.
+     * @return El pertinent CommentResponseDTO preparat.
+     * @author Jordi Verdalet Carrera
+     */
+    private CommentResponseDTO mapCommentToDTO(Comment comment) {
+        return new CommentResponseDTO(
+                comment.getId(),
+                comment.getUser().getId(),
+                comment.getUser().getUsername(),
+                comment.getBook().getId(),
+                comment.getBook().getTitle(),
+                comment.getContent(),
+                comment.getCreatedAt(),
+                comment.getUpdatedAt());
     }
 }

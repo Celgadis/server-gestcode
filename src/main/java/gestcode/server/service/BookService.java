@@ -60,6 +60,19 @@ public interface BookService {
     BookResponseDTO getBookById(Long id, String username);
 
     /**
+     * Obté les dades d'un llibre pel seu identificador, amb la possibilitat
+     * d'incloure els comentaris de forma paginada.
+     *
+     * @param id               L'identificador del llibre.
+     * @param username         El nom d'usuari autenticat, o null.
+     * @param includeComments  Si s'han d'incloure els comentaris en la resposta.
+     * @param commentPageable  Dades de paginació per als comentaris.
+     * @return El llibre en format DTO, opcionalment amb la pàgina de comentaris.
+     * @author Jordi Verdalet Carrera
+     */
+    BookResponseDTO getBookById(Long id, String username, boolean includeComments, Pageable commentPageable);
+
+    /**
      * Llista llibres de forma paginada amb filtres opcionals.
      *
      * @param title Filtre opcional pel títol.
