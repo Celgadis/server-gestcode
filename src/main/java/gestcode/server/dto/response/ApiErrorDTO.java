@@ -1,20 +1,34 @@
 package gestcode.server.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Objecte de Transferència de Dades (DTO) per gestionar i retornar errors de l'API.
+ * Objecte de Transferència de Dades (DTO) per gestionar i retornar errors de
+ * l'API.
  *
  * @author Jordi Verdalet Carrera
  */
+@Schema(description = "Esquema per a les respostes d'error de l'API")
 public class ApiErrorDTO {
 
+    @Schema(description = "Data i hora de l'error", example = "2024-04-12T10:00:00")
     private LocalDateTime timestamp;
+
+    @Schema(description = "Codi d'estat HTTP", example = "404")
     private int status;
+
+    @Schema(description = "Tipus d'error HTTP", example = "Tipus d'error")
     private String error;
+
+    @Schema(description = "Missatge detallat de l'error", example = "Missatge detallat del error")
     private String message;
+
+    @Schema(description = "Ruta de l'API on s'ha produït l'error", example = "/api/xxx")
     private String path;
+
+    @Schema(description = "Llista d'errors de validació per camps (si n'hi ha)")
     private List<String> fieldErrors;
 
     /**
@@ -30,10 +44,10 @@ public class ApiErrorDTO {
     /**
      * Constructor amb paràmetres per configurar completament l'error.
      *
-     * @param status Codi d'estat HTTP.
-     * @param error Tipus d'error (ex. "Bad Request").
+     * @param status  Codi d'estat HTTP.
+     * @param error   Tipus d'error (ex. "Bad Request").
      * @param message Missatge descriptiu de l'error.
-     * @param path Ruta de l'API on s'ha produït l'error.
+     * @param path    Ruta de l'API on s'ha produït l'error.
      * @author Jordi Verdalet Carrera
      */
     public ApiErrorDTO(int status, String error, String message, String path) {

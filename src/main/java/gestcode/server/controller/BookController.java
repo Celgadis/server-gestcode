@@ -112,7 +112,7 @@ public class BookController {
             @PathVariable Long id,
             @Parameter(description = "Si s'han d'incloure els comentaris") @RequestParam(required = false, defaultValue = "false") boolean includeComments,
             @Parameter(description = "Número de pàgina dels comentaris") @RequestParam(required = false, defaultValue = "0") int commentPage,
-            @Parameter(description = "Mida de la pàgina dels comentaris") @RequestParam(required = false, defaultValue = "5") int commentSize,
+            @Parameter(description = "Mida de la pàgina dels comentaris") @RequestParam(required = false, defaultValue = "10") int commentSize,
             Authentication authentication) {
         String username = (authentication != null) ? authentication.getName() : null;
         Pageable commentPageable = PageRequest.of(commentPage, commentSize, Sort.by("createdAt").descending());
