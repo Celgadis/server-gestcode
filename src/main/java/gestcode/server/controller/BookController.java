@@ -21,6 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
 
 /**
  * Controlador de l'API per a l'entitat Book.
@@ -45,14 +47,15 @@ public class BookController {
      * @param bookDTO Dades del llibre a crear.
      * @return Dades del llibre creat.
      */
-    @Operation(summary = "Crear llibre", description = "Afegeix un nou llibre a la biblioteca. (Requereix ADMIN)")
+    @Operation(summary = "Crear llibre", description = "Afegeix un nou llibre a la biblioteca. (Requereix ADMIN). Format multipart/form-data. El camp 'cover' és per a la imatge.")
     @ApiResponse(responseCode = "201", description = "Llibre creat correctament")
     @ApiResponse(responseCode = "400", description = "Dades invàlides o ISBN duplicat")
     @ApiResponse(responseCode = "403", description = "No tens permisos per crear llibres")
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<BookResponseDTO> createBook(@Valid @RequestBody BookCreateRequestDTO bookDTO) {
-        BookResponseDTO response = bookService.createBook(bookDTO);
+    public ResponseEntity<BookResponseDTO> createBook(
+            @Valid @ModelAttribute BookCreateRequestDTO bookDTO) {
+        BookResponseDTO response = bookService.createBook(bookDTO, bookDTO.getCover());
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -64,15 +67,16 @@ public class BookController {
      * @param bookDTO Dades del llibre a actualitzar.
      * @return Dades del llibre actualitzat.
      */
-    @Operation(summary = "Actualitzar llibre", description = "Edita la informació d'un llibre existent. (Requereix ADMIN)")
+    @Operation(summary = "Actualitzar llibre", description = "Edita la informació d'un llibre existent. (Requereix ADMIN). Format multipart/form-data. El camp 'cover' és per a la imatge.")
     @ApiResponse(responseCode = "200", description = "Llibre actualitzat correctament")
     @ApiResponse(responseCode = "404", description = "Llibre no trobat")
     @ApiResponse(responseCode = "403", description = "No tens permisos per actualitzar llibres")
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<BookResponseDTO> updateBook(@PathVariable Long id,
-            @Valid @RequestBody BookUpdateRequestDTO bookDTO) {
-        BookResponseDTO response = bookService.updateBook(id, bookDTO);
+    public ResponseEntity<BookResponseDTO> updateBook(
+            @PathVariable Long id,
+            @Valid @ModelAttribute BookUpdateRequestDTO bookDTO) {
+        BookResponseDTO response = bookService.updateBook(id, bookDTO, bookDTO.getCover());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

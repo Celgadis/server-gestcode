@@ -57,6 +57,9 @@ public class Book {
     @Column(nullable = false, columnDefinition = "DOUBLE DEFAULT 0")
     private Double rating = 0.0;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 
@@ -67,7 +70,7 @@ public class Book {
     }
 
     public Book(String isbn, String title, String author, int year, String genre, int pages, String language,
-            String description, int quantity, double rating) {
+            String description, int quantity, double rating, String imageUrl) {
         this.isbn = isbn;
         this.title = title;
         this.author = author;
@@ -78,6 +81,7 @@ public class Book {
         this.description = description;
         this.quantity = quantity;
         this.rating = rating;
+        this.imageUrl = imageUrl;
     }
 
     public Long getId() {
@@ -174,6 +178,14 @@ public class Book {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
 }

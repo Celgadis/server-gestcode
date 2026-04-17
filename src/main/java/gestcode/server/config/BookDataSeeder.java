@@ -95,7 +95,7 @@ public class BookDataSeeder implements CommandLineRunner {
         for (BookCreateRequestDTO dto : booksToSeed) {
             BookResponseDTO bookResponse;
             if (!bookRepository.existsByIsbn(dto.getIsbn())) {
-                bookResponse = bookService.createBook(dto);
+                bookResponse = bookService.createBook(dto, null);
                 logger.info("Book created: {} (ISBN: {})", bookResponse.getTitle(), bookResponse.getIsbn());
             } else {
                 logger.info("Book already exists: {} (ISBN: {})", dto.getTitle(), dto.getIsbn());

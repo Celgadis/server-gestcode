@@ -18,6 +18,9 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -59,11 +62,14 @@ public class SocialIntegrationTest {
         createReq.setGenre("Ficció");
         createReq.setDescription("Descripció");
 
+        Map<String, String> formData = createBookFormData(createReq);
+        String boundary = "---" + UUID.randomUUID().toString();
+
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:" + port + "/api/books"))
-                .header("Content-Type", "application/json")
+                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
                 .header("Authorization", "Bearer " + adminToken)
-                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(createReq)))
+                .POST(HttpRequest.BodyPublishers.ofByteArray(buildMultipartBody(formData, boundary)))
                 .build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -138,5 +144,30 @@ public class SocialIntegrationTest {
             // 5. Neteja independentment del resultat
             deleteTestBook(bookId, adminToken);
         }
+    }
+
+    private Map<String, String> createBookFormData(BookCreateRequestDTO r) {
+        Map<String, String> data = new LinkedHashMap<>();
+        data.put("isbn", r.getIsbn());
+        data.put("title", r.getTitle());
+        data.put("author", r.getAuthor());
+        data.put("year", r.getYear().toString());
+        data.put("genre", r.getGenre());
+        data.put("pages", r.getPages().toString());
+        data.put("language", r.getLanguage());
+        data.put("description", r.getDescription());
+        data.put("quantity", r.getQuantity().toString());
+        return data;
+    }
+
+    private byte[] buildMultipartBody(Map<String, String> data, String boundary) {
+        StringBuilder body = new StringBuilder();
+        for (Map.Entry<String, String> entry : data.entrySet()) {
+            body.append("--").append(boundary).append("\r\n");
+            body.append("Content-Disposition: form-data; name=\"").append(entry.getKey()).append("\"\r\n\r\n");
+            body.append(entry.getValue()).append("\r\n");
+        }
+        body.append("--").append(boundary).append("--\r\n");
+        return body.toString().getBytes(StandardCharsets.UTF_8);
     }
 }

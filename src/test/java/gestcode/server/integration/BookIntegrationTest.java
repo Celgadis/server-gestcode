@@ -16,6 +16,9 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -65,11 +68,14 @@ public class BookIntegrationTest {
         createReq.setGenre("Ficció");
         createReq.setDescription("Descripció de test");
 
+        Map<String, String> formData = createBookFormData(createReq);
+        String boundary = "---" + UUID.randomUUID().toString();
+
         HttpRequest createRequest = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:" + port + "/api/books"))
-                .header("Content-Type", "application/json")
+                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
                 .header("Authorization", "Bearer " + token)
-                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(createReq)))
+                .POST(HttpRequest.BodyPublishers.ofByteArray(buildMultipartBody(formData, boundary)))
                 .build();
 
         HttpResponse<String> createResponse = httpClient.send(createRequest, HttpResponse.BodyHandlers.ofString());
@@ -90,11 +96,14 @@ public class BookIntegrationTest {
         updateReq.setLanguage("ca");
         updateReq.setDescription("Descripció modificada");
 
+        Map<String, String> updateData = createBookFormData(updateReq);
+        String updateBoundary = "---" + UUID.randomUUID().toString();
+
         HttpRequest updateRequest = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:" + port + "/api/books/" + createdBook.getId()))
-                .header("Content-Type", "application/json")
+                .header("Content-Type", "multipart/form-data; boundary=" + updateBoundary)
                 .header("Authorization", "Bearer " + token)
-                .PUT(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(updateReq)))
+                .method("PUT", HttpRequest.BodyPublishers.ofByteArray(buildMultipartBody(updateData, updateBoundary)))
                 .build();
 
         HttpResponse<String> updateResponse = httpClient.send(updateRequest, HttpResponse.BodyHandlers.ofString());
@@ -130,11 +139,14 @@ public class BookIntegrationTest {
         createReq.setGenre("Ficció");
         createReq.setDescription("Descripció");
 
+        Map<String, String> forbiddenData = createBookFormData(createReq);
+        String forbiddenBoundary = "---" + UUID.randomUUID().toString();
+
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:" + port + "/api/books"))
-                .header("Content-Type", "application/json")
+                .header("Content-Type", "multipart/form-data; boundary=" + forbiddenBoundary)
                 .header("Authorization", "Bearer " + token)
-                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(createReq)))
+                .POST(HttpRequest.BodyPublishers.ofByteArray(buildMultipartBody(forbiddenData, forbiddenBoundary)))
                 .build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -153,5 +165,44 @@ public class BookIntegrationTest {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         assertEquals(HttpStatus.OK.value(), response.statusCode());
         assertTrue(response.body().contains("content"));
+    }
+
+    private Map<String, String> createBookFormData(Object req) {
+        Map<String, String> data = new LinkedHashMap<>();
+        if (req instanceof BookCreateRequestDTO) {
+            BookCreateRequestDTO r = (BookCreateRequestDTO) req;
+            data.put("isbn", r.getIsbn());
+            data.put("title", r.getTitle());
+            data.put("author", r.getAuthor());
+            data.put("year", r.getYear().toString());
+            data.put("genre", r.getGenre());
+            data.put("pages", r.getPages().toString());
+            data.put("language", r.getLanguage());
+            data.put("description", r.getDescription());
+            data.put("quantity", r.getQuantity().toString());
+        } else if (req instanceof BookUpdateRequestDTO) {
+            BookUpdateRequestDTO r = (BookUpdateRequestDTO) req;
+            data.put("isbn", r.getIsbn());
+            data.put("title", r.getTitle());
+            data.put("author", r.getAuthor());
+            data.put("year", r.getYear().toString());
+            data.put("genre", r.getGenre());
+            data.put("pages", r.getPages().toString());
+            data.put("language", r.getLanguage());
+            data.put("description", r.getDescription());
+            data.put("quantity", r.getQuantity().toString());
+        }
+        return data;
+    }
+
+    private byte[] buildMultipartBody(Map<String, String> data, String boundary) {
+        StringBuilder body = new StringBuilder();
+        for (Map.Entry<String, String> entry : data.entrySet()) {
+            body.append("--").append(boundary).append("\r\n");
+            body.append("Content-Disposition: form-data; name=\"").append(entry.getKey()).append("\"\r\n\r\n");
+            body.append(entry.getValue()).append("\r\n");
+        }
+        body.append("--").append(boundary).append("--\r\n");
+        return body.toString().getBytes(StandardCharsets.UTF_8);
     }
 }

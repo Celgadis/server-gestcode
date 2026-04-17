@@ -13,7 +13,9 @@ import gestcode.server.repository.CommentRepository;
 import gestcode.server.repository.UserBookRatingRepository;
 import gestcode.server.repository.UserRepository;
 import gestcode.server.service.BookService;
+import gestcode.server.service.FileStorageService;
 import jakarta.persistence.criteria.Predicate;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,6 +43,7 @@ public class BookServiceImpl implements BookService {
     private final UserBookRatingRepository ratingRepository;
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
+    private final FileStorageService fileStorageService;
 
     /**
      * Constructor que injecta els repositoris necessaris.
@@ -53,11 +56,13 @@ public class BookServiceImpl implements BookService {
     public BookServiceImpl(BookRepository bookRepository,
             UserBookRatingRepository ratingRepository,
             UserRepository userRepository,
-            CommentRepository commentRepository) {
+            CommentRepository commentRepository,
+            FileStorageService fileStorageService) {
         this.bookRepository = bookRepository;
         this.ratingRepository = ratingRepository;
         this.userRepository = userRepository;
         this.commentRepository = commentRepository;
+        this.fileStorageService = fileStorageService;
     }
 
     /**
@@ -66,13 +71,23 @@ public class BookServiceImpl implements BookService {
      * rating a 0.
      *
      * @param bookDTO Dades del llibre a crear.
+     * @param cover   Imatge de la portada.
      * @return El DTO del llibre creat guardat.
      */
     @Override
     @Transactional
-    public BookResponseDTO createBook(BookCreateRequestDTO bookDTO) {
+    public BookResponseDTO createBook(BookCreateRequestDTO bookDTO, MultipartFile cover) {
         if (bookRepository.existsByIsbn(bookDTO.getIsbn())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aquest ISBN ja existeix");
+        }
+
+        String imageUrl = null;
+        if (cover != null && !cover.isEmpty()) {
+            try {
+                imageUrl = fileStorageService.saveCover(cover, bookDTO.getIsbn());
+            } catch (Exception e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error pujant la imatge");
+            }
         }
 
         // Crear llibre: passem els paràmetres, el rating l'iniciem a 0.0
@@ -86,7 +101,8 @@ public class BookServiceImpl implements BookService {
                 bookDTO.getLanguage(),
                 bookDTO.getDescription(),
                 bookDTO.getQuantity(),
-                0.0);
+                0.0,
+                imageUrl);
 
         Book savedBook = bookRepository.save(book);
         return mapToDTO(savedBook, null);
@@ -98,11 +114,12 @@ public class BookServiceImpl implements BookService {
      *
      * @param id      L'identificador de llibre.
      * @param bookDTO Les dades actualitzades per introduir.
+     * @param cover   Imatge de la portada.
      * @return El DTO resultant després d'aplicar la modificació.
      */
     @Override
     @Transactional
-    public BookResponseDTO updateBook(Long id, BookUpdateRequestDTO bookDTO) {
+    public BookResponseDTO updateBook(Long id, BookUpdateRequestDTO bookDTO, MultipartFile cover) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Llibre no trobat"));
 
@@ -146,6 +163,16 @@ public class BookServiceImpl implements BookService {
         if (bookDTO.getQuantity() != null) {
             book.setQuantity(bookDTO.getQuantity());
         }
+        
+        if (cover != null && !cover.isEmpty()) {
+            try {
+                String imageUrl = fileStorageService.saveCover(cover, book.getIsbn());
+                book.setImageUrl(imageUrl);
+            } catch (Exception e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error pujant la imatge");
+            }
+        }
+        
         // El rating no s'actualitza manualment amb l'edició, s'actualitza a través
         // de les puntuacions que fan els usuaris.
 
@@ -163,6 +190,11 @@ public class BookServiceImpl implements BookService {
     public void deleteBook(Long id) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Llibre no trobat"));
+
+        // Esborrar la imatge del disc
+        if (book.getImageUrl() != null) {
+            fileStorageService.deleteCover(book.getImageUrl());
+        }
 
         bookRepository.delete(book);
     }
@@ -307,6 +339,7 @@ public class BookServiceImpl implements BookService {
                 book.getQuantity(),
                 book.getRating(),
                 myRating,
+                book.getImageUrl(),
                 book.getCreatedAt());
     }
 

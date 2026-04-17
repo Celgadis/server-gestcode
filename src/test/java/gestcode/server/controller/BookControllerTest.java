@@ -26,6 +26,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.springframework.http.HttpMethod;
 
 @ExtendWith(MockitoExtension.class)
 public class BookControllerTest {
@@ -65,11 +66,18 @@ public class BookControllerTest {
         response.setTitle("Llibre de Test");
         response.setAuthor("Autor Test");
 
-        when(bookService.createBook(any(BookCreateRequestDTO.class))).thenReturn(response);
+        when(bookService.createBook(any(BookCreateRequestDTO.class), any())).thenReturn(response);
 
-        mockMvc.perform(post("/api/books")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(multipart("/api/books")
+                .param("isbn", request.getIsbn())
+                .param("title", request.getTitle())
+                .param("author", request.getAuthor())
+                .param("year", request.getYear().toString())
+                .param("genre", request.getGenre())
+                .param("pages", request.getPages().toString())
+                .param("language", request.getLanguage())
+                .param("description", request.getDescription())
+                .param("quantity", request.getQuantity().toString()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.title").value("Llibre de Test"));
@@ -124,11 +132,18 @@ public class BookControllerTest {
         response.setId(1L);
         response.setTitle("Llibre actualitzat");
 
-        when(bookService.updateBook(eq(1L), any(BookUpdateRequestDTO.class))).thenReturn(response);
+        when(bookService.updateBook(eq(1L), any(BookUpdateRequestDTO.class), any())).thenReturn(response);
 
-        mockMvc.perform(put("/api/books/1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(multipart(HttpMethod.PUT, "/api/books/1")
+                .param("isbn", request.getIsbn())
+                .param("title", request.getTitle())
+                .param("author", request.getAuthor())
+                .param("year", request.getYear().toString())
+                .param("genre", request.getGenre())
+                .param("pages", request.getPages().toString())
+                .param("language", request.getLanguage())
+                .param("description", request.getDescription())
+                .param("quantity", request.getQuantity().toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Llibre actualitzat"));
     }

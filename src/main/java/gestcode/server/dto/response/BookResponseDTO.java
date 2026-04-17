@@ -29,6 +29,7 @@ public class BookResponseDTO {
     private int quantity;
     private double rating;
     private Double myRating;
+    private String imageUrl;
     private Page<CommentResponseDTO> comments;
     private LocalDateTime createdAt;
 
@@ -65,6 +66,7 @@ public class BookResponseDTO {
         this.description = description;
         this.quantity = quantity;
         this.rating = rating;
+        this.imageUrl = null;
         this.myRating = null;
         this.createdAt = createdAt;
     }
@@ -88,7 +90,7 @@ public class BookResponseDTO {
      * @author Jordi Verdalet Carrera
      */
     public BookResponseDTO(Long id, String isbn, String title, String author, int year, String genre, int pages,
-            String language, String description, int quantity, double rating, Double myRating, LocalDateTime createdAt) {
+            String language, String description, int quantity, double rating, Double myRating, String imageUrl, LocalDateTime createdAt) {
         this.id = id;
         this.isbn = isbn;
         this.title = title;
@@ -101,6 +103,7 @@ public class BookResponseDTO {
         this.quantity = quantity;
         this.rating = rating;
         this.myRating = myRating;
+        this.imageUrl = imageUrl;
         this.createdAt = createdAt;
     }
 
@@ -241,6 +244,14 @@ public class BookResponseDTO {
      */
     public void setComments(Page<CommentResponseDTO> comments) {
         this.comments = comments;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
 }

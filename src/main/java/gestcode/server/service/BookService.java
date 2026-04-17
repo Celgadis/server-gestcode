@@ -5,6 +5,7 @@ import gestcode.server.dto.request.BookUpdateRequestDTO;
 import gestcode.server.dto.response.BookResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Interfície del servei per a la gestió de llibres.
@@ -17,18 +18,20 @@ public interface BookService {
      * Crea un nou llibre.
      *
      * @param bookDTO Dades del llibre a crear.
+     * @param cover   La imatge de portada del llibre (opcional).
      * @return El llibre creat com a DTO.
      */
-    BookResponseDTO createBook(BookCreateRequestDTO bookDTO);
+    BookResponseDTO createBook(BookCreateRequestDTO bookDTO, MultipartFile cover);
 
     /**
      * Actualitza les dades d'un llibre existent.
      *
      * @param id L'identificador del llibre a actualitzar.
      * @param bookDTO Les noves dades.
+     * @param cover   La imatge de portada del llibre (opcional).
      * @return El llibre actualitzat com a DTO.
      */
-    BookResponseDTO updateBook(Long id, BookUpdateRequestDTO bookDTO);
+    BookResponseDTO updateBook(Long id, BookUpdateRequestDTO bookDTO, MultipartFile cover);
 
     /**
      * Elimina un llibre físicament de la base de dades.

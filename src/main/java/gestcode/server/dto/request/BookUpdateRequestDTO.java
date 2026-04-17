@@ -4,6 +4,8 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * DTO (Data Transfer Object) per a l'actualització d'un llibre.
@@ -46,6 +48,9 @@ public class BookUpdateRequestDTO {
     @NotNull(message = "La quantitat és obligatòria")
     @Min(value = 0, message = "La quantitat no pot ser negativa")
     private Integer quantity;
+
+    @Schema(description = "Imatge de portada del llibre a actualitzar", type = "string", format = "binary")
+    private MultipartFile cover;
 
     // Getters i Setters
 
@@ -119,5 +124,13 @@ public class BookUpdateRequestDTO {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    public MultipartFile getCover() {
+        return cover;
+    }
+
+    public void setCover(MultipartFile cover) {
+        this.cover = cover;
     }
 }
