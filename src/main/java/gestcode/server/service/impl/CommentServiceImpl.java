@@ -38,10 +38,9 @@ public class CommentServiceImpl implements CommentService {
     /**
      * Constructor que injecta els repositoris i l'observer necessaris.
      *
-     * @param ratingRepository      Repositori de puntuacions.
-     * @param bookRepository        Repositori de llibres.
-     * @param userRepository        Repositori d'usuaris.
-     * @param ratingAverageObserver Observer que recalcula la mitjana del llibre.
+     * @param commentRepository Repositori de puntuacions.
+     * @param bookRepository    Repositori de llibres.
+     * @param userRepository    Repositori d'usuaris.
      * @author Jordi Verdalet Carrera
      */
     @Autowired
