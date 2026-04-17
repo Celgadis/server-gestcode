@@ -8,10 +8,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+/**
+ * Per omplir la base de dades amb dades basiques o de test
+ * (com l'administrador i usuaris de prova) en iniciar l'aplicació.
+ *
+ * @author Jordi Verdalet Carrera
+ */
 @Component
+@Order(1)
 public class UserSeeder implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(UserSeeder.class);
@@ -28,11 +36,27 @@ public class UserSeeder implements CommandLineRunner {
     @Value("${app.seed.testdata.password:test1234}")
     private String testPassword;
 
+    /**
+     * Constructor del seeder d'usuaris.
+     *
+     * @param userRepository  Repositori d'usuaris.
+     * @param passwordEncoder Encriptador de contrasenyes.
+     * @author Jordi Verdalet Carrera
+     */
     public UserSeeder(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * Mètode que s'executa en arrencar l'aplicació.
+     * Crea l'usuari administrador per defecte i usuaris de prova si està habilitat
+     * a la configuració.
+     *
+     * @param args Arguments de línia de comandes.
+     * @throws Exception Si hi ha algun error en la creació.
+     * @author Jordi Verdalet Carrera
+     */
     @Override
     public void run(String... args) throws Exception {
         seedAdminUser();
@@ -44,6 +68,11 @@ public class UserSeeder implements CommandLineRunner {
         }
     }
 
+    /**
+     * Crea l'usuari administrador si no existeix a la base de dades.
+     *
+     * @author Jordi Verdalet Carrera
+     */
     private void seedAdminUser() {
         if (!userRepository.existsByUsername("admin")) {
             logger.info("Creating default admin user...");
@@ -63,6 +92,11 @@ public class UserSeeder implements CommandLineRunner {
         }
     }
 
+    /**
+     * Crea usuaris de prova si no existeixen a la base de dades.
+     *
+     * @author Jordi Verdalet Carrera
+     */
     private void seedTestUsers() {
         if (!userRepository.existsByUsername("test1")) {
             logger.info("Creating test1 user...");
