@@ -179,6 +179,7 @@ public class CommentServiceImpl implements CommentService {
      * Esborra un comentari de la base de dades.
      *
      * @param id L'identificador del comentari a eliminar.
+     * @author Jordi Verdalet Carrera
      */
     @Override
     public void deleteComment(Long id) {
@@ -186,6 +187,25 @@ public class CommentServiceImpl implements CommentService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comentari no trobat"));
 
         commentRepository.delete(comment);
+    }
+
+    /**
+     * Elimina un comentari físicament de la base de dades utilitzant l'IDE del
+     * l'usuari i del llibre.
+     *
+     * @param userId L'identificador de l'usuari.
+     * @param bookId L'identificador del llibre.
+     * @return L'identificador del comentari eliminat.
+     * @author Jordi Verdalet Carrera
+     */
+    @Override
+    public Long deleteCommentByUserAndBook(Long userId, Long bookId) {
+        Comment comment = commentRepository.findByUserIdAndBookId(userId, bookId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comentari no trobat"));
+
+        Long commentId = comment.getId();
+        commentRepository.delete(comment);
+        return commentId;
     }
 
     /**

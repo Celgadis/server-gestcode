@@ -73,6 +73,18 @@ public interface CommentService {
      * Elimina un comentari físicament de la base de dades.
      *
      * @param id L'identificador del comentari a eliminar.
+     * @author Jordi Verdalet Carrera
      */
     void deleteComment(Long id);
+
+    /**
+     * Elimina un comentari físicament de la base de dades utilitzant l'IDE del
+     * l'usuari i del llibre.
+     *
+     * @param userId L'identificador de l'usuari.
+     * @param bookId L'identificador del llibre.
+     * @return L'identificador del comentari eliminat.
+     * @author Jordi Verdalet Carrera
+     */
+    Long deleteCommentByUserAndBook(Long userId, Long bookId);
 }

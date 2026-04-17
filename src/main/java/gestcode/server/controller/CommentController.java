@@ -155,4 +155,46 @@ public class CommentController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /**
+     * Endpoint per esborrar un comentari segons el seu identificador.
+     * Accessible per administradors.
+     *
+     * @param id L'identificador del comentari.
+     * @return El missatge d'èxit de l'operació.
+     * @author Jordi Verdalet Carrera
+     */
+    @Operation(summary = "Esborrar comentari", description = "Elimina un comentari mitjançant el seu identificador. (Requereix ADMIN)")
+    @ApiResponse(responseCode = "200", description = "Comentari esborrat correctament")
+    @ApiResponse(responseCode = "404", description = "Comentari no trobat")
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<gestcode.server.dto.response.MessageResponseDTO> deleteComment(
+            @PathVariable Long id) {
+        commentService.deleteComment(id);
+        return ResponseEntity
+                .ok(new gestcode.server.dto.response.MessageResponseDTO(id, "Comentari esborrat correctament"));
+    }
+
+    /**
+     * Endpoint per esborrar un comentari d'un usuari sobre un llibre concret.
+     * Accessible per administradors.
+     *
+     * @param userId L'identificador de l'usuari.
+     * @param bookId L'identificador del llibre.
+     * @return El missatge d'èxit de l'operació amb l'ID del comentari esborrat.
+     * @author Jordi Verdalet Carrera
+     */
+    @Operation(summary = "Esborrar comentari d'un usuari i llibre", description = "Elimina el comentari d'un usuari per a un llibre concret. (Requereix ADMIN)")
+    @ApiResponse(responseCode = "200", description = "Comentari esborrat correctament")
+    @ApiResponse(responseCode = "404", description = "Comentari no trobat")
+    @DeleteMapping("/user/{userId}/book/{bookId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<gestcode.server.dto.response.MessageResponseDTO> deleteCommentByUserAndBook(
+            @PathVariable Long userId,
+            @PathVariable Long bookId) {
+        Long deletedId = commentService.deleteCommentByUserAndBook(userId, bookId);
+        return ResponseEntity
+                .ok(new gestcode.server.dto.response.MessageResponseDTO(deletedId, "Comentari esborrat correctament"));
+    }
+
 }
