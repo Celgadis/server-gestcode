@@ -12,6 +12,8 @@ import gestcode.server.repository.BookRepository;
 import gestcode.server.repository.CommentRepository;
 import gestcode.server.repository.UserBookRatingRepository;
 import gestcode.server.repository.UserRepository;
+import gestcode.server.repository.LoanRepository;
+import gestcode.server.model.enums.LoanStatus;
 import gestcode.server.service.BookService;
 import gestcode.server.service.FileStorageService;
 import jakarta.persistence.criteria.Predicate;
@@ -44,6 +46,7 @@ public class BookServiceImpl implements BookService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final FileStorageService fileStorageService;
+    private final LoanRepository loanRepository;
 
     /**
      * Constructor que injecta els repositoris necessaris.
@@ -57,12 +60,14 @@ public class BookServiceImpl implements BookService {
             UserBookRatingRepository ratingRepository,
             UserRepository userRepository,
             CommentRepository commentRepository,
-            FileStorageService fileStorageService) {
+            FileStorageService fileStorageService,
+            LoanRepository loanRepository) {
         this.bookRepository = bookRepository;
         this.ratingRepository = ratingRepository;
         this.userRepository = userRepository;
         this.commentRepository = commentRepository;
         this.fileStorageService = fileStorageService;
+        this.loanRepository = loanRepository;
     }
 
     /**
@@ -160,8 +165,16 @@ public class BookServiceImpl implements BookService {
             book.setDescription(bookDTO.getDescription());
         }
 
-        if (bookDTO.getQuantity() != null) {
+        if (bookDTO.getQuantity() != null && !bookDTO.getQuantity().equals(book.getQuantity())) {
+            int activeLoans = loanRepository.countByBookIdAndStatusNot(book.getId(), LoanStatus.RETORNAT);
+            int newAvailableCopies = bookDTO.getQuantity() - activeLoans;
+            
+            if (newAvailableCopies < 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La quantitat nova és insuficient per cobrir els préstecs actius.");
+            }
+            
             book.setQuantity(bookDTO.getQuantity());
+            book.setAvailableCopies(newAvailableCopies);
         }
         
         if (cover != null && !cover.isEmpty()) {
@@ -337,6 +350,7 @@ public class BookServiceImpl implements BookService {
                 book.getLanguage(),
                 book.getDescription(),
                 book.getQuantity(),
+                book.getAvailableCopies(),
                 book.getRating(),
                 myRating,
                 book.getImageUrl(),

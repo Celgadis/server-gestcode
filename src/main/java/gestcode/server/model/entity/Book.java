@@ -54,6 +54,9 @@ public class Book {
     @Column(nullable = false)
     private int quantity;
 
+    @Column(name = "available_copies", nullable = false)
+    private int availableCopies;
+
     @Column(nullable = false, columnDefinition = "DOUBLE DEFAULT 0")
     private Double rating = 0.0;
 
@@ -80,6 +83,7 @@ public class Book {
         this.language = language;
         this.description = description;
         this.quantity = quantity;
+        this.availableCopies = quantity;
         this.rating = rating;
         this.imageUrl = imageUrl;
     }
@@ -162,6 +166,14 @@ public class Book {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    public int getAvailableCopies() {
+        return availableCopies;
+    }
+
+    public void setAvailableCopies(int availableCopies) {
+        this.availableCopies = availableCopies;
     }
 
     public double getRating() {

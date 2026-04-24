@@ -27,6 +27,7 @@ public class BookResponseDTO {
     private String language;
     private String description;
     private int quantity;
+    private int availableCopies;
     private double rating;
     private Double myRating;
     private String imageUrl;
@@ -48,13 +49,14 @@ public class BookResponseDTO {
      * @param pages       El nombre de pàgines.
      * @param language    L'idioma del llibre.
      * @param description La descripció del llibre.
-     * @param quantity    La quantitat de còpies disponibles.
+     * @param quantity    La quantitat de còpies totals.
+     * @param availableCopies La quantitat de còpies actualment disponibles.
      * @param rating      La mitjana de puntuació global del llibre.
      * @param createdAt   La data de creació del registre.
      * @author Jordi Verdalet Carrera
      */
     public BookResponseDTO(Long id, String isbn, String title, String author, int year, String genre, int pages,
-            String language, String description, int quantity, double rating, LocalDateTime createdAt) {
+            String language, String description, int quantity, int availableCopies, double rating, LocalDateTime createdAt) {
         this.id = id;
         this.isbn = isbn;
         this.title = title;
@@ -65,6 +67,7 @@ public class BookResponseDTO {
         this.language = language;
         this.description = description;
         this.quantity = quantity;
+        this.availableCopies = availableCopies;
         this.rating = rating;
         this.imageUrl = null;
         this.myRating = null;
@@ -83,14 +86,15 @@ public class BookResponseDTO {
      * @param pages       El nombre de pàgines.
      * @param language    L'idioma del llibre.
      * @param description La descripció del llibre.
-     * @param quantity    La quantitat de còpies disponibles.
+     * @param quantity    La quantitat de còpies totals.
+     * @param availableCopies La quantitat de còpies actualment disponibles.
      * @param rating      La mitjana de puntuació global del llibre.
      * @param myRating    La puntuació de l'usuari autenticat (pot ser null).
      * @param createdAt   La data de creació del registre.
      * @author Jordi Verdalet Carrera
      */
     public BookResponseDTO(Long id, String isbn, String title, String author, int year, String genre, int pages,
-            String language, String description, int quantity, double rating, Double myRating, String imageUrl, LocalDateTime createdAt) {
+            String language, String description, int quantity, int availableCopies, double rating, Double myRating, String imageUrl, LocalDateTime createdAt) {
         this.id = id;
         this.isbn = isbn;
         this.title = title;
@@ -101,6 +105,7 @@ public class BookResponseDTO {
         this.language = language;
         this.description = description;
         this.quantity = quantity;
+        this.availableCopies = availableCopies;
         this.rating = rating;
         this.myRating = myRating;
         this.imageUrl = imageUrl;
@@ -187,6 +192,14 @@ public class BookResponseDTO {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    public int getAvailableCopies() {
+        return availableCopies;
+    }
+
+    public void setAvailableCopies(int availableCopies) {
+        this.availableCopies = availableCopies;
     }
 
     public double getRating() {
