@@ -42,6 +42,9 @@ public class LoanController {
     /**
      * Mètode auxiliar per obtenir l'usuari actual autenticat.
      * Necessita l'obtenció completa de User per passar-la al service.
+     * 
+     * @return L'usuari actual autenticat.
+     * @author Jordi Verdalet Carrera
      */
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -51,6 +54,13 @@ public class LoanController {
                         "Usuari no autenticat adequadament"));
     }
 
+    /**
+     * Endpoint per crear un nou préstec.
+     * 
+     * @param requestDTO Dades de la petició del préstec.
+     * @return Les dades del préstec creat.
+     * @author Jordi Verdalet Carrera
+     */
     @PostMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(summary = "Crear préstec", description = "Concedeix un préstec del llibre sol·licitat si es compleixen les condicions.")
@@ -62,6 +72,13 @@ public class LoanController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    /**
+     * Endpoint per retornar un préstec existent.
+     * 
+     * @param id L'identificador del préstec a retornar.
+     * @return Les dades del préstec retornat.
+     * @author Jordi Verdalet Carrera
+     */
     @PutMapping("/{id}/return")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(summary = "Retornar préstec", description = "Marca el préstec com a retornat.")
@@ -72,6 +89,19 @@ public class LoanController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /**
+     * Endpoint per obtenir tots els préstecs amb filtres i paginació. Només accessible per a administradors.
+     * 
+     * @param userId Identificador de l'usuari (opcional).
+     * @param bookId Identificador del llibre (opcional).
+     * @param status Estat del préstec (opcional).
+     * @param pageNo Número de la pàgina.
+     * @param pageSize Mida de la pàgina.
+     * @param sortBy Camp per ordenar.
+     * @param sortDir Direcció de l'ordenació (asc/desc).
+     * @return Una llista paginada de préstecs.
+     * @author Jordi Verdalet Carrera
+     */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Llistar tots els préstecs (Admin)", description = "Servei d'ús administratiu amb filtres i paginació.")
@@ -90,6 +120,16 @@ public class LoanController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /**
+     * Endpoint per llistar els préstecs de l'usuari actual autenticat.
+     * 
+     * @param pageNo Número de la pàgina.
+     * @param pageSize Mida de la pàgina.
+     * @param sortBy Camp per ordenar.
+     * @param sortDir Direcció de l'ordenació (asc/desc).
+     * @return Una llista paginada dels préstecs de l'usuari.
+     * @author Jordi Verdalet Carrera
+     */
     @GetMapping("/my-loans")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(summary = "Llistar préstecs de l'usuari identificat", description = "Obté tots els préstecs històrics i actuals de qui fa la crida.")
@@ -104,6 +144,16 @@ public class LoanController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /**
+     * Endpoint per llistar els préstecs fora de termini de l'usuari actual autenticat.
+     * 
+     * @param pageNo Número de la pàgina.
+     * @param pageSize Mida de la pàgina.
+     * @param sortBy Camp per ordenar.
+     * @param sortDir Direcció de l'ordenació (asc/desc).
+     * @return Una llista paginada dels préstecs fora de termini de l'usuari.
+     * @author Jordi Verdalet Carrera
+     */
     @GetMapping("/my-loans/overdue")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(summary = "Llistar préstecs fora de termini de l'usuari")
@@ -120,6 +170,16 @@ public class LoanController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /**
+     * Endpoint per llistar els préstecs propers a caducar de l'usuari actual autenticat.
+     * 
+     * @param pageNo Número de la pàgina.
+     * @param pageSize Mida de la pàgina.
+     * @param sortBy Camp per ordenar.
+     * @param sortDir Direcció de l'ordenació (asc/desc).
+     * @return Una llista paginada dels préstecs propers a caducar de l'usuari.
+     * @author Jordi Verdalet Carrera
+     */
     @GetMapping("/my-loans/near-due")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(summary = "Llistar préstecs prop a caducar de l'usuari")
@@ -136,6 +196,16 @@ public class LoanController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /**
+     * Endpoint per llistar tots els préstecs caducats. Només accessible per a administradors.
+     * 
+     * @param pageNo Número de la pàgina.
+     * @param pageSize Mida de la pàgina.
+     * @param sortBy Camp per ordenar.
+     * @param sortDir Direcció de l'ordenació (asc/desc).
+     * @return Una llista paginada de tots els préstecs caducats.
+     * @author Jordi Verdalet Carrera
+     */
     @GetMapping("/all-overdue")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Llistar tots els préstecs caducats (Admin)")
@@ -150,6 +220,16 @@ public class LoanController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /**
+     * Endpoint per llistar tots els préstecs que caduquen properament. Només accessible per a administradors.
+     * 
+     * @param pageNo Número de la pàgina.
+     * @param pageSize Mida de la pàgina.
+     * @param sortBy Camp per ordenar.
+     * @param sortDir Direcció de l'ordenació (asc/desc).
+     * @return Una llista paginada de tots els préstecs propers a caducar.
+     * @author Jordi Verdalet Carrera
+     */
     @GetMapping("/all-near-due")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Llistar tots els préstecs que caduquen properament (Admin)")

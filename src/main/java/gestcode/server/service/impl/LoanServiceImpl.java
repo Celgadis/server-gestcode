@@ -44,6 +44,14 @@ public class LoanServiceImpl implements LoanService {
     @Autowired
     private BookRepository bookRepository;
 
+    /**
+     * Crea un nou préstec per a un usuari i llibre especificats.
+     * 
+     * @param requestDTO Les dades de la petició del préstec.
+     * @param user L'usuari que fa el préstec.
+     * @return Les dades del préstec creat.
+     * @author Jordi Verdalet Carrera
+     */
     @Override
     @Transactional
     public LoanResponseDTO createLoan(LoanRequestDTO requestDTO, User user) {
@@ -69,6 +77,14 @@ public class LoanServiceImpl implements LoanService {
         return mapToDTO(savedLoan);
     }
 
+    /**
+     * Retorna un préstec existent.
+     * 
+     * @param id L'identificador del préstec.
+     * @param user L'usuari que fa la devolució.
+     * @return Les dades del préstec actualitzat.
+     * @author Jordi Verdalet Carrera
+     */
     @Override
     @Transactional
     public LoanResponseDTO returnLoan(Long id, User user) {
@@ -94,6 +110,19 @@ public class LoanServiceImpl implements LoanService {
         return mapToDTO(updatedLoan);
     }
 
+    /**
+     * Obté tots els préstecs amb opcions de filtre i paginació.
+     * 
+     * @param userId L'identificador de l'usuari.
+     * @param bookId L'identificador del llibre.
+     * @param status L'estat del préstec.
+     * @param pageNo Número de la pàgina.
+     * @param pageSize Mida de la pàgina.
+     * @param sortBy Camp d'ordenació.
+     * @param sortDir Direcció d'ordenació.
+     * @return Pàgina de préstecs.
+     * @author Jordi Verdalet Carrera
+     */
     @Override
     public LoanListResponseDTO getAllLoans(Long userId, Long bookId, LoanStatus status,
             int pageNo, int pageSize, String sortBy, String sortDir) {
@@ -120,6 +149,17 @@ public class LoanServiceImpl implements LoanService {
         return mapToPageDTO(page);
     }
 
+    /**
+     * Obté els préstecs d'un usuari específic.
+     * 
+     * @param user L'usuari del qual obtenir els préstecs.
+     * @param pageNo Número de la pàgina.
+     * @param pageSize Mida de la pàgina.
+     * @param sortBy Camp d'ordenació.
+     * @param sortDir Direcció d'ordenació.
+     * @return Pàgina de préstecs de l'usuari.
+     * @author Jordi Verdalet Carrera
+     */
     @Override
     public LoanListResponseDTO getMyLoans(User user, int pageNo, int pageSize, String sortBy, String sortDir) {
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
@@ -130,6 +170,18 @@ public class LoanServiceImpl implements LoanService {
         return mapToPageDTO(page);
     }
 
+    /**
+     * Obté els préstecs d'un usuari amb estats específics.
+     * 
+     * @param user L'usuari del qual obtenir els préstecs.
+     * @param statuses Els estats per filtrar.
+     * @param pageNo Número de la pàgina.
+     * @param pageSize Mida de la pàgina.
+     * @param sortBy Camp d'ordenació.
+     * @param sortDir Direcció d'ordenació.
+     * @return Pàgina de préstecs filtrada.
+     * @author Jordi Verdalet Carrera
+     */
     @Override
     public LoanListResponseDTO getMyLoansByStatuses(User user, List<LoanStatus> statuses,
             int pageNo, int pageSize, String sortBy, String sortDir) {
@@ -141,6 +193,17 @@ public class LoanServiceImpl implements LoanService {
         return mapToPageDTO(page);
     }
 
+    /**
+     * Obté tots els préstecs que coincideixen amb els estats indicats.
+     * 
+     * @param statuses Els estats per filtrar.
+     * @param pageNo Número de la pàgina.
+     * @param pageSize Mida de la pàgina.
+     * @param sortBy Camp d'ordenació.
+     * @param sortDir Direcció d'ordenació.
+     * @return Pàgina de préstecs filtrada per estats.
+     * @author Jordi Verdalet Carrera
+     */
     @Override
     public LoanListResponseDTO getAllLoansByStatuses(List<LoanStatus> statuses,
             int pageNo, int pageSize, String sortBy, String sortDir) {
@@ -153,6 +216,10 @@ public class LoanServiceImpl implements LoanService {
         return mapToPageDTO(page);
     }
 
+    /**
+     * Revisa i actualitza els estats dels préstecs segons la data de venciment.
+     * @author Jordi Verdalet Carrera
+     */
     @Override
     @Transactional
     public void checkAndUpdateLoanStatuses() {
@@ -184,6 +251,10 @@ public class LoanServiceImpl implements LoanService {
         }
     }
 
+    /**
+     * Sincronitza el nombre de còpies disponibles dels llibres segons els préstecs actius.
+     * @author Jordi Verdalet Carrera
+     */
     @Override
     @Transactional
     public void syncBookAvailableCopies() {
@@ -210,6 +281,13 @@ public class LoanServiceImpl implements LoanService {
         }
     }
 
+    /**
+     * Mapeja una entitat Loan a un LoanResponseDTO.
+     * 
+     * @param loan L'entitat a mapejar.
+     * @return L'objecte DTO mapejat.
+     * @author Jordi Verdalet Carrera
+     */
     private LoanResponseDTO mapToDTO(Loan loan) {
         return new LoanResponseDTO(
                 loan.getId(),
@@ -223,6 +301,13 @@ public class LoanServiceImpl implements LoanService {
                 loan.getStatus());
     }
 
+    /**
+     * Mapeja una pàgina d'entitats Loan a un LoanListResponseDTO.
+     * 
+     * @param page La pàgina d'entitats a mapejar.
+     * @return L'objecte DTO de llista de préstecs.
+     * @author Jordi Verdalet Carrera
+     */
     private LoanListResponseDTO mapToPageDTO(Page<Loan> page) {
         List<LoanResponseDTO> dtos = page.getContent().stream()
                 .map(this::mapToDTO).collect(Collectors.toList());
