@@ -127,5 +127,20 @@ public class UserSeeder implements CommandLineRunner {
             userRepository.save(test2);
             logger.info("Test2 user created successfully.");
         }
+
+        if (!userRepository.existsByUsername("test3")) {
+            logger.info("Creating test3 user...");
+            User test3 = new User();
+            test3.setUsername("test3");
+            test3.setPassword(passwordEncoder.encode(testPassword));
+            test3.setFirstName("Test");
+            test3.setLastName1("User 3");
+            test3.setEmail("test3@gestcode.test");
+            test3.setRole(Role.USER);
+            test3.setStatus(UserStatus.ACTIVE);
+            test3.setEnabled(true);
+            userRepository.save(test3);
+            logger.info("Test3 user created successfully.");
+        }
     }
 }
