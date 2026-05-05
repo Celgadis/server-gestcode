@@ -101,7 +101,7 @@ public class BookDataSeeder implements CommandLineRunner {
                 logger.info("Book already exists: {} (ISBN: {})", dto.getTitle(), dto.getIsbn());
                 // Busquem el llibre existent per obtenir el seu ID per a les interaccions
                 bookResponse = bookRepository.findByIsbn(dto.getIsbn())
-                    .map(b -> new BookResponseDTO(b.getId(), b.getIsbn(), b.getTitle(), b.getAuthor(), b.getYear(), b.getGenre(), b.getPages(), b.getLanguage(), b.getDescription(), b.getQuantity(), b.getRating(), b.getCreatedAt()))
+                    .map(b -> new BookResponseDTO(b.getId(), b.getIsbn(), b.getTitle(), b.getAuthor(), b.getYear(), b.getGenre(), b.getPages(), b.getLanguage(), b.getDescription(), b.getQuantity(), b.getAvailableCopies(), b.getRating(), b.getCreatedAt()))
                     .orElse(null);
             }
 

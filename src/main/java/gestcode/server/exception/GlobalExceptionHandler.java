@@ -93,9 +93,10 @@ public class GlobalExceptionHandler {
          * @param ex      L'excepció d'accés denegat.
          * @param request La petició HTTP.
          * @return Una resposta amb error d'accés i codi HTTP 403.
+         * @author Jordi Verdalet Carrera
          */
-    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
-    public ResponseEntity<ApiErrorDTO> handleAccessDeniedException(
+        @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+        public ResponseEntity<ApiErrorDTO> handleAccessDeniedException(
                         org.springframework.security.access.AccessDeniedException ex, HttpServletRequest request) {
                 ApiErrorDTO errorDTO = new ApiErrorDTO(
                                 HttpStatus.FORBIDDEN.value(),
@@ -103,6 +104,44 @@ public class GlobalExceptionHandler {
                                 "No tens permisos per accedir a aquest recurs",
                                 request.getRequestURI());
                 return new ResponseEntity<>(errorDTO, HttpStatus.FORBIDDEN);
+        }
+
+        /**
+         * Gestiona l'excepció quan l'usuari assoleix el limit de préstecs.
+         *
+         * @param ex      L'excepció capturada.
+         * @param request La petició HTTP.
+         * @return Una resposta d'error i codi HTTP 400.
+         * @author Jordi Verdalet Carrera
+         */
+        @ExceptionHandler(MaxLoansExceededException.class)
+        public ResponseEntity<ApiErrorDTO> handleMaxLoansExceededException(MaxLoansExceededException ex,
+                        HttpServletRequest request) {
+                ApiErrorDTO errorDTO = new ApiErrorDTO(
+                                HttpStatus.BAD_REQUEST.value(),
+                                "Límit de préstecs excedit",
+                                ex.getMessage(),
+                                request.getRequestURI());
+                return new ResponseEntity<>(errorDTO, HttpStatus.BAD_REQUEST);
+        }
+
+        /**
+         * Gestiona l'excepció quan un llibre no està disponible.
+         *
+         * @param ex      L'excepció capturada.
+         * @param request La petició HTTP.
+         * @return Una resposta d'error i codi HTTP 400.
+         * @author Jordi Verdalet Carrera
+         */
+        @ExceptionHandler(BookNotAvailableException.class)
+        public ResponseEntity<ApiErrorDTO> handleBookNotAvailableException(BookNotAvailableException ex,
+                        HttpServletRequest request) {
+                ApiErrorDTO errorDTO = new ApiErrorDTO(
+                                HttpStatus.BAD_REQUEST.value(),
+                                "Llibre no disponible",
+                                ex.getMessage(),
+                                request.getRequestURI());
+                return new ResponseEntity<>(errorDTO, HttpStatus.BAD_REQUEST);
         }
 
         /**
